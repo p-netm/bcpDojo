@@ -5,12 +5,6 @@ import re
 
 
 class Dojo(object):
-    unallocated_list = []
-    unallocated_living_list = []
-    staff_list = []
-    fellow_list = []
-    office_dict = {}
-    living_space_dict = {}
 
     def __init__(self):
         """ The Dojo class contains the required utilities that will
@@ -18,7 +12,13 @@ class Dojo(object):
         think of it as the main logic area that links a classes operations and
         the arguments parsed through the docopt.
         """
-        pass
+        self.unallocated_list = []
+        self.unallocated_living_list = []
+        self.staff_list = []
+        self.fellow_list = []
+        self.office_dict = {}
+        self.living_space_dict = {}
+
 
     @staticmethod
     def get_number(list_arg):
@@ -59,7 +59,7 @@ class Dojo(object):
                         raise ValueError("Room named: %s is already created" % Office(str(i)).name)
                 except ValueError as error:
                     print(error)
-                    return "Error raised"
+                    # return "Error raised"
 
             return self.office_dict
 
@@ -67,6 +67,9 @@ class Dojo(object):
         """ uses occupation and decides what constructor of either the subclasses
         fellow or staff that it should call. depending on the accommodate parameter
          a fellow occupant can be assigned an office and a living_space"""
+        person_name = person_name.lower()
+        occupation = occupation.lower()
+        accommodate = accommodate.lower()
         if occupation == "fellow":
             if accommodate == "yes" or accommodate == "y":
                 fellow_obj = Fellow(str(person_name))
@@ -112,6 +115,8 @@ class Dojo(object):
                         self.unallocated_list.append(staff_obj)
                 else:
                     print("detected an id collision for", staff_obj.person_name)
+        else:
+            print("Person has not been added")
 
     def assign_office(self, person_object):
         empty_office_dict = self.get_empty_rooms(self.office_dict, 6)
@@ -230,22 +235,107 @@ class Dojo(object):
         """Task1: Input: nothing; output:  print names of unallocated people on the screen.
          if -o argument is given => dump the names to a text file """
         # first write the print strings then call the file handler function
-        print_string = "contains the name of both the staff and the fellows who did not office allocations"
-        second_print_string = "contains the names of fellows who requested accommodation and are not yet accommodated"
+        print_string = " names of both the staff and the fellows who did not office allocations"
+        second_print_string = " names of fellows who requested accommodation and are not yet accommodated"
         # unallocated_living-list contains the names of fellows who requested accommodation and are not yet accommodated
         # unallocated_list contains the name of both the staff and the fellows who did not office allocations
-        for name in self.unallocated_list:
-            print_string += "\n" + name + "\n"
-        for name in self.unallocated_living_list:
-            second_print_string += "\n" + name + "\n"
+        for person in self.unallocated_list:
+            print_string += "\n" + person.person_name + "\n"
+        for person in self.unallocated_living_list:
+            second_print_string += "\n" + person.person_name + "\n"
         total_string = print_string + second_print_string
         self.file_handler_func(total_string, file_name)
 
-    def reallocate_person(self):
-        pass
+    # def reallocate_person(self, person_id, new_room):
+    #     """ takes in two inputs the personal id and new room name.
+    #     assign the person identified by the id to a new room name"""
+    #     # logic: check if id exists; if it does check that room exists and is not full;
+    #     # if it to exists remove the person with the specified id from all unallocated_lists
+    #     # can also be used to assign an unallocated person to a room -> so far not
+    #
+    #     if self.id_is_present(person_id):
+    #         #  first retrieve the room that the person_id is in and then restrict movement
+    #         #  within that line(living_space or office)
+    #         double_list = self.retrieve_person_by_id(person_id)
+    #         if new_room in self.office_dict.keys():
+    #             # the whole logic : remember to consider that staff should not rellocate to living space
+    #             # unimplemented consideration : reallocating a fellow who does not want accommodation to
+    #             # a living_space
+    #             if len(self.office_dict[new_room]) < 6:
+    #                 if new_room != double_list[0]:
+    #                     if double_list[1] == "office":
+    #                         # pop the person name from its current office and append it to the new office
+    #                         self.office_dict[double_list[0]].pop(double_list[2])
+    #                         self.office_dict[new_room].append(double_list[2])
+    #                     else:
+    #                         print("cannot rellocate from office to living_space")
+    #                 else:
+    #                     print("Person already in", new_room)
+    #             else:
+    #                 print(new_room, "seems to be full.")
+    #         elif new_room in self.living_space_dict.keys():
+    #             if len(self.living_space_dict[new_room]) < 4:
+    #                 if new_room != double_list[0]:
+    #                     if double_list[1] == "living_space":
+    #                         # pop the person name from its current living_space and append it to the new living space
+    #                         self.living_space_dict[double_list[0]].pop(double_list[2])
+    #                         self.living_space_dict[new_room].append(double_list[2])
+    #                     else:
+    #                         print("cannot rellocate from living_space to office")
+    #                 else:
+    #                     print("Person already in", new_room)
+    #             else:
+    #                 print(new_room, "seems to be full")
+    #         else:
+    #             print("The room " + new_room + "has not yet been created")
+    #     else:
+    #         print("no one by the id" + person_id + "was found\n")
 
-    def load_people(self):
-        pass
+    def load_people(self, file_name):
+        """ will take in one compulsory argument, which is the name of the file from which to read data
+        from. for each record in this file we can then add_people"""
+        # check if if file exists
+
+        if self.if_file_exists(file_name):
+            multi_list = self.read_file_names(file_name)
+            for person in multi_list:
+                self.add_person(person[0], person[1], person[2])
+        else:
+            print("Dojo could not find any file by the name: " + file_name)
+            return False
+
+    def if_file_exists(self, file_name):
+        # Task2: this function checks if a file exists; if not it will return False
+        try:
+                file_handler = open(file_name, 'r')
+                file_handler.close()
+                return True
+        except FileNotFoundError as error:
+            return False
+
+    def read_file_names(self, file_name):
+        file_handler = open(file_name, 'r')
+        return_list = []
+        for line in file_handler:
+            # maybe like create like a multi dimensional list; the main index will contain the line number
+            # while the secondary index will like contain the list contents for each line.
+            temp = line.strip("\n").split(" ")
+            return_list.append(self.refractor_line_feed(temp))
+        file_handler.close()
+        return return_list
+
+    def refractor_line_feed(self, temp_list):
+        full_name = temp_list[0] + " " + temp_list[1]
+        occupation = temp_list[2]
+        temp = []
+        temp.append(full_name)
+        temp.append(occupation)
+        if len(temp_list) == 3:
+            temp.append("n")
+            return temp
+        elif len(temp_list) == 4:
+            temp.append(temp_list[3])
+            return temp
 
     def save_state(self):
         pass
@@ -302,8 +392,6 @@ class Dojo(object):
     def get_all_ids(self):
         """ retrieve all dictionaries that store people with ids an returns a list containing the ids"""
         person_ids_list = []
-        for obj_index in self.unallocated_list:
-            person_ids_list.append(obj_index.person_id)
         for obj_index in self.fellow_list:
             person_ids_list.append(obj_index.person_id)
         for obj_index in self.staff_list:
@@ -319,3 +407,51 @@ class Dojo(object):
             return False
         else:
             return True
+
+    def retrieve_person_by_id(self, person_id):
+        """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id
+         or the person's name"""
+        for person in self.fellow_list:
+            if person.person_id == person_id:
+                return person
+        for person in self.staff_list:
+            if person.person_id == person_id:
+                return person
+        return "no one was found with the id: " + person_id
+
+    def retrieve_room(self, person_id):
+        """Thought: to return a rooms information from a person_id """
+        # so first retrieve the person name through its person object
+        # then use the person name to identify the name of the office in which the name is listed in the occupants
+        person_obj = self.retrieve_person_by_id(person_id)
+        person_name = person_obj.person_name
+        #now we use the name to get the room
+        for office in self.office_dict.keys():
+            if person_name in self.office_dict[office]:
+                return [office, "office", person_name]
+        for space in self.living_space_dict.keys():
+            if person_name in self.living_space_dict[space]:
+                return [space, "living_space", person_name]
+        #returns a list of the room name and its type; its an index in the respective dictionary
+
+    def view_person_id(self):
+        """Seeing that ids are assigned by the system i thought it wise to include a function that lists
+        a person and his/her id"""
+        # for person in fellow and staff list, format string output, first column as name and second as id
+        for person in self.fellow_list:
+            print(person.person_name, ": ", person.person_id)
+        for person in self.staff_list:
+            print(person.person_name, ": ", person.person_id)
+
+
+
+        """                                     NOTES
+            CONSIDERATIONS:
+                1 the reallocate person should have also been used to allocate unallocated persons to a room.
+                2 i also think that the os.path module can help simplify on the functionality of testing to see
+                if a certain file is existent.
+                3 using mock module to simulate a user's input for successful testing --> still very allusive
+                4 the add_person maybe can have a fourth parameter that takes in a person's id => the problem
+                    is that if we say that a person can be assigned an id after their objects are initialised then
+                    that would mean that we are not fully initialising our objects.
+                    """
