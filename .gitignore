@@ -4,3 +4,5 @@ testit.py
 /.cache/
 models/__pycache__/
 tests/__pycache__/
+tests/task1_tests.py
+tests/task2_tests.py

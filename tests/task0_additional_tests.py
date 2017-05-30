@@ -40,7 +40,7 @@ class Task0AdditionalUtilityMethods(unittest.TestCase):
         # checks that a no rooms created message is returned when there are no rooms to assign people
 
         dojo1 = Dojo()
-        fellow1 = Fellow("fellow name")
+        fellow1 = Fellow("fellow name", '3254879')
         self.assertEqual(dojo1.assign_living_space(fellow1), False,
                          msg="assign living_space failed")
 
@@ -48,7 +48,7 @@ class Task0AdditionalUtilityMethods(unittest.TestCase):
         # checks that a no rooms created message is returned when there are no rooms to assign people
 
         dojo1 = Dojo()
-        fellow1 = Fellow("fellow name")
+        fellow1 = Fellow("fellow name", '5687432')
         self.assertEqual(dojo1.assign_office(fellow1), False, msg="assign office failed")
 
 
