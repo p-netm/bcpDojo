@@ -55,7 +55,7 @@ This system will be used to automatically allocate spaces to people at random.
   
   #### view_ids:
     Usage:
-    to reallocate a person you might need their ids; in a case where such is not given then, one can use this 
+    to reallocate a person you might need their ids; in a case where such is not given then, the admin can use this 
     function and print out all people added to the dojo as well as the ids that they gave when being registered 
     into the system.
     
