@@ -1,15 +1,14 @@
-__author__ = 'Sudo Pnet'
-from dojo import Dojo
-from housing import LivingSpace, Office, Staff, Fellow, Person
 import unittest
 
+from bcpDojo.models.dojo import Dojo
+from bcpDojo.models.housing import LivingSpace, Office, Staff, Fellow
 
 
 class InstancesTests(unittest.TestCase):
     def setUp(self):
         self.living_space1 = LivingSpace("living_space_name")
-        self.staff1 = Staff("person_name")
-        self.fellow1 = Fellow("fellow_name")
+        self.staff1 = Staff("person_name", '3254698')
+        self.fellow1 = Fellow("fellow_name", '1235687')
         self.office1 = Office("office_name")
 
     @unittest.skip
@@ -75,7 +74,7 @@ class TestsForTask0(unittest.TestCase):
 
         dojo1 = Dojo()
         initial_length = dojo1.get_number(dojo1.fellow_list)
-        dojo1.add_person("Kelvin Njogu", "fellow")
+        dojo1.add_person("Kelvin", "Njogu", "fellow", "n", '32320798')
         current_length = dojo1.get_number(dojo1.fellow_list)
         self.assertEqual(current_length - initial_length, 1, msg=" fellow created should add to the fellow list count")
 
@@ -83,7 +82,7 @@ class TestsForTask0(unittest.TestCase):
 
         dojo1 = Dojo()
         initial_length = dojo1.get_number(dojo1.fellow_list)
-        dojo1.add_person("Kelvin Njogu", "fellow", "yes")
+        dojo1.add_person("Kelvin", "Njogu", "fellow", "yes", '1234567')
         current_length = dojo1.get_number(dojo1.fellow_list)
         self.assertEqual(current_length - initial_length, 1,
                          msg=" fellow created should add to the fellow list count")

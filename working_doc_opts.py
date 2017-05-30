@@ -25,7 +25,7 @@ Options:
 import sys
 import cmd
 from docopt import docopt, DocoptExit
-from dojo import Dojo
+from models.dojo import Dojo
 
 
 def docopt_cmd(func):
@@ -86,7 +86,6 @@ class MyInteractive (cmd.Cmd):
 
         # checks if fellow is set and if fellow wants accommodation or if staff is set. it then
         # passes the variables to the implementing function in the dojo object
-        full_name = arg['<first_name>'] + " " + arg['<second_name>']
         if arg['fellow']:
             occupation = "fellow"
             accommodate = 'n'
@@ -94,11 +93,11 @@ class MyInteractive (cmd.Cmd):
                 accommodate = "yes"
             elif arg['no'] or arg['n']:
                 accommodate = "no"
-            self.dojo.add_person(full_name, occupation, accommodate)
+            self.dojo.add_person(arg['<first_name>'], arg['<second_name>'], occupation, accommodate)
 
         if arg['staff']:
             occupation = "staff".lower()
-            self.dojo.add_person(full_name, occupation)
+            self.dojo.add_person(arg['<first_name>'], arg['<second_name>'], occupation)
 
     @docopt_cmd
     def do_print_room(self, arg):

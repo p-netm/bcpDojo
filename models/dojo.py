@@ -1,5 +1,5 @@
 __author__ = 'Sudo Pnet'
-from housing import LivingSpace, Staff, Office, Fellow
+from .housing import LivingSpace, Staff, Office, Fellow
 import random
 import re
 
@@ -9,8 +9,9 @@ class Dojo(object):
     def __init__(self):
         """ The Dojo class contains the required utilities that will
         automate the process of calling instances of the other classes
-        think of it as the main logic area that links a classes operations and
-        the arguments parsed through the docopt.
+        think of it as the main logic area that links the class' models and
+        the arguments parsed through the docopt in order to accomplish certain
+        defined tasks.
         """
         self.unallocated_list = []
         self.unallocated_living_list = []
@@ -19,11 +20,25 @@ class Dojo(object):
         self.office_dict = {}
         self.living_space_dict = {}
 
-
     @staticmethod
     def get_number(list_arg):
         # will return the length of any list or dictionary passed to it.
         return len(list_arg)
+
+    def instant_room(self, room_type, room_listing, dict, housing_class):
+        """check that a room is non_existent before is is added to list of current rooms:
+           implementation is now one fold """
+        for i in room_listing:
+            try:
+                if i not in dict.keys():
+                    dict[housing_class(str(i)).name] = []
+                    print("An %s called %s has been successfully created!" %
+                          (room_type, housing_class(str(i)).name))
+                else:
+                    raise ValueError("Room named: %s is already created" % housing_class(str(i)).name)
+            except ValueError as error:
+                print(error)
+        return dict
 
     def create_room(self, room_type, parsed_name_list):
         """ uses room_type to decide what type of rooms to create, then loops through
@@ -31,48 +46,36 @@ class Dojo(object):
         for i in parsed_name_list:
             if not str.isalnum(str(i)):
                 return "Invalid room name"
-
-        # check that a room is non_existent before is is added to list of current rooms:
-        # implementation is two fold: for offices and living_spaces
         if room_type == "living_space":
-            for i in parsed_name_list:
-                try:
-                    if i not in self.living_space_dict.keys():
-                        self.living_space_dict[LivingSpace(str(i)).name] = []
-                        print("An office called %s has been successfully created!" %
-                              LivingSpace(str(i)).name)
-                    else:
-                        raise ValueError("Room named: %s is already created" % LivingSpace(str(i)).name)
-                except ValueError as error:
-                    print(error)
-                    return "Error raised"
-
-            return self.living_space_dict
-
+            self.instant_room(room_type, parsed_name_list, self.living_space_dict, LivingSpace)
         if room_type == "office":
-            for i in parsed_name_list:
-                try:
-                    if i not in self.office_dict.keys():
-                        self.office_dict[Office(str(i)).name] = []
-                        print("An office called %s has been successfully created!" % Office(str(i)).name)
-                    else:
-                        raise ValueError("Room named: %s is already created" % Office(str(i)).name)
-                except ValueError as error:
-                    print(error)
-                    # return "Error raised"
+            self.instant_room(room_type, parsed_name_list, self.office_dict, Office)
 
-            return self.office_dict
+    def set_person_id(self, person_id):
+        """ Task0: set a person's id """
+        bool_counter = person_id
+        while bool_counter == None:
+            print('Please type in your id(q to quit): ')
+            input_id = str(input())
+            if input_id .isdigit() and (7 == len(input_id) or len(input_id) == 8):
+                bool_counter = False
+                return input_id
+            elif input_id == 'q':
+                raise TypeError("\nid not assigned; person not created")
+            else:
+                print("The id should be numeric with either 8 or 7 digits")
 
-    def add_person(self, person_name, occupation, accommodate="n"):
+    def add_person(self, first_name, second_name, occupation, accommodate="n", id=None):
         """ uses occupation and decides what constructor of either the subclasses
         fellow or staff that it should call. depending on the accommodate parameter
          a fellow occupant can be assigned an office and a living_space"""
-        person_name = person_name.lower()
+        person_name = first_name.lower() + " " + second_name.lower()
         occupation = occupation.lower()
         accommodate = accommodate.lower()
+        person_id = self.set_person_id(id)
         if occupation == "fellow":
             if accommodate == "yes" or accommodate == "y":
-                fellow_obj = Fellow(str(person_name))
+                fellow_obj = Fellow(str(person_name), person_id)
                 if fellow_obj.person_id:
                     if self.id_is_present(fellow_obj.person_id):
                         self.fellow_list.append(fellow_obj)
@@ -91,7 +94,7 @@ class Dojo(object):
                         print(fellow_obj.person_name, "has not been added; the id is already in the system")
 
             elif accommodate == "no" or accommodate == "n":
-                fellow_obj = Fellow(str(person_name))
+                fellow_obj = Fellow(str(person_name), person_id)
                 if fellow_obj.person_id:
                     if self.id_is_present(fellow_obj.person_id):
                         self.fellow_list.append(fellow_obj)
@@ -104,7 +107,7 @@ class Dojo(object):
                     print(fellow_obj.person_name, "has not been added; the id is already in the system")
 
         elif occupation == "staff":
-            staff_obj = Staff(str(person_name))
+            staff_obj = Staff(str(person_name), person_id)
             if staff_obj.person_id:
                 if self.id_is_present(staff_obj.person_id):
                     self.staff_list.append(staff_obj)

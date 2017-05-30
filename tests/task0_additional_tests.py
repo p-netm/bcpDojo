@@ -1,7 +1,8 @@
 __author__ = 'Sudo Pnet'
-from dojo import Dojo
-from housing import LivingSpace, Office, Staff, Fellow, Person
 import unittest
+
+from bcpDojo.models.dojo import Dojo
+from bcpDojo.models.housing import LivingSpace, Office, Staff, Fellow
 
 
 class Task0AdditionalUtilityMethods(unittest.TestCase):
