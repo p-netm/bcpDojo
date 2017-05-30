@@ -76,50 +76,46 @@ class Dojo(object):
         if occupation == "fellow":
             if accommodate == "yes" or accommodate == "y":
                 fellow_obj = Fellow(str(person_name), person_id)
-                if fellow_obj.person_id:
-                    if self.id_is_present(fellow_obj.person_id):
-                        self.fellow_list.append(fellow_obj)
-                        # randomise adding this fellow to the living_space_list
-                        office_assign_check = self.assign_office(fellow_obj)
-                        print(fellow_obj.person_name, "has been successfully added")
-                        living_assign_check = self.assign_living_space(fellow_obj)
-                        if not office_assign_check:
-                            # the fellow was not assigned to an office
-                            print(fellow_obj.person_name, "has been added but not assigned to any office")
-                            self.unallocated_list.append(fellow_obj)
-                        if not living_assign_check:
-                            self.unallocated_living_list.append(fellow_obj)
-                            print(fellow_obj.person_name, "has been added but not assigned to any living_space")
-                    else:
-                        print(fellow_obj.person_name, "has not been added; the id is already in the system")
+                if self.id_is_present(fellow_obj.person_id):
+                    self.fellow_list.append(fellow_obj)
+                    # randomise adding this fellow to the living_space_list
+                    office_assign_check = self.assign_office(fellow_obj)
+                    print(fellow_obj.person_name, "has been successfully added")
+                    living_assign_check = self.assign_living_space(fellow_obj)
+                    if not office_assign_check:
+                        # the fellow was not assigned to an office
+                        print(fellow_obj.person_name, "has been added but not assigned to any office")
+                        self.unallocated_list.append(fellow_obj)
+                    if not living_assign_check:
+                        self.unallocated_living_list.append(fellow_obj)
+                        print(fellow_obj.person_name, "has been added but not assigned to any living_space")
+                else:
+                    print(fellow_obj.person_name, "has not been added; the id is already in the system")
 
             elif accommodate == "no" or accommodate == "n":
                 fellow_obj = Fellow(str(person_name), person_id)
-                if fellow_obj.person_id:
-                    if self.id_is_present(fellow_obj.person_id):
-                        self.fellow_list.append(fellow_obj)
-                        office_assign_check = self.assign_office(fellow_obj)
-                        print(fellow_obj.person_name, "has been successfully added")
-                        if not office_assign_check:
-                            print(fellow_obj.person_name, "has been added but not assigned to any office")
-                            self.unallocated_list.append(fellow_obj)
+                if self.id_is_present(fellow_obj.person_id):
+                    self.fellow_list.append(fellow_obj)
+                    office_assign_check = self.assign_office(fellow_obj)
+                    print(fellow_obj.person_name, "has been successfully added")
+                    if not office_assign_check:
+                        print(fellow_obj.person_name, "has been added but not assigned to any office")
+                        self.unallocated_list.append(fellow_obj)
                 else:
                     print(fellow_obj.person_name, "has not been added; the id is already in the system")
 
         elif occupation == "staff":
             staff_obj = Staff(str(person_name), person_id)
-            if staff_obj.person_id:
-                if self.id_is_present(staff_obj.person_id):
-                    self.staff_list.append(staff_obj)
-                    # add the staff to the office dict ?
-                    office_assign_check = self.assign_office(staff_obj)
-                    if not office_assign_check:
-                        print(staff_obj.person_name, "has been added but not allocated to any office")
-                        self.unallocated_list.append(staff_obj)
-                else:
-                    print("detected an id collision for", staff_obj.person_name)
-        else:
-            print("Person has not been added")
+            if self.id_is_present(staff_obj.person_id):
+                self.staff_list.append(staff_obj)
+                # add the staff to the office dict ?
+                office_assign_check = self.assign_office(staff_obj)
+                if not office_assign_check:
+                    print(staff_obj.person_name, "has been added but not allocated to any office")
+                    self.unallocated_list.append(staff_obj)
+            else:
+                print("detected an id collision for", staff_obj.person_name)
+
 
     def assign_office(self, person_object):
         empty_office_dict = self.get_empty_rooms(self.office_dict, 6)
@@ -249,50 +245,6 @@ class Dojo(object):
         total_string = print_string + second_print_string
         self.file_handler_func(total_string, file_name)
 
-    # def reallocate_person(self, person_id, new_room):
-    #     """ takes in two inputs the personal id and new room name.
-    #     assign the person identified by the id to a new room name"""
-    #     # logic: check if id exists; if it does check that room exists and is not full;
-    #     # if it to exists remove the person with the specified id from all unallocated_lists
-    #     # can also be used to assign an unallocated person to a room -> so far not
-    #
-    #     if self.id_is_present(person_id):
-    #         #  first retrieve the room that the person_id is in and then restrict movement
-    #         #  within that line(living_space or office)
-    #         double_list = self.retrieve_person_by_id(person_id)
-    #         if new_room in self.office_dict.keys():
-    #             # the whole logic : remember to consider that staff should not rellocate to living space
-    #             # unimplemented consideration : reallocating a fellow who does not want accommodation to
-    #             # a living_space
-    #             if len(self.office_dict[new_room]) < 6:
-    #                 if new_room != double_list[0]:
-    #                     if double_list[1] == "office":
-    #                         # pop the person name from its current office and append it to the new office
-    #                         self.office_dict[double_list[0]].pop(double_list[2])
-    #                         self.office_dict[new_room].append(double_list[2])
-    #                     else:
-    #                         print("cannot rellocate from office to living_space")
-    #                 else:
-    #                     print("Person already in", new_room)
-    #             else:
-    #                 print(new_room, "seems to be full.")
-    #         elif new_room in self.living_space_dict.keys():
-    #             if len(self.living_space_dict[new_room]) < 4:
-    #                 if new_room != double_list[0]:
-    #                     if double_list[1] == "living_space":
-    #                         # pop the person name from its current living_space and append it to the new living space
-    #                         self.living_space_dict[double_list[0]].pop(double_list[2])
-    #                         self.living_space_dict[new_room].append(double_list[2])
-    #                     else:
-    #                         print("cannot rellocate from living_space to office")
-    #                 else:
-    #                     print("Person already in", new_room)
-    #             else:
-    #                 print(new_room, "seems to be full")
-    #         else:
-    #             print("The room " + new_room + "has not yet been created")
-    #     else:
-    #         print("no one by the id" + person_id + "was found\n")
 
     def load_people(self, file_name):
         """ will take in one compulsory argument, which is the name of the file from which to read data
@@ -453,8 +405,15 @@ class Dojo(object):
                 1 the reallocate person should have also been used to allocate unallocated persons to a room.
                 2 i also think that the os.path module can help simplify on the functionality of testing to see
                 if a certain file is existent.
+                2.8 Also on a same note, there is the question that where should a file be so that it can be accessed
+                 by the system; i mean is there some specific place where the user must place a file that is being used
+                 by the system and in what way can we make this process more dynamic and more user friendly
                 3 using mock module to simulate a user's input for successful testing --> still very allusive
+
+                5. the return boolean value for sel.id_is_present are inverted
+
+                                                        RESOLVED
                 4 the add_person maybe can have a fourth parameter that takes in a person's id => the problem
                     is that if we say that a person can be assigned an id after their objects are initialised then
-                    that would mean that we are not fully initialising our objects.
+                    that would mean that we are not fully initialising our objects. -> resolved"HOOORAY"
                     """
