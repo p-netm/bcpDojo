@@ -28,7 +28,37 @@ This system will be used to automatically allocate spaces to people at random.
 
   #### add_person:
      Usage: add_person <first_name> <second_name> (fellow [[yes|y]|[no|n]]|staff)
+  
+  #### print_room:
+     Usage: print_room <room_name>
+     Prints the names of all occupants within the provided room_name
+     
+  #### print_allocations:
+     Usage: print_allocations [<file_name>]
+     goes through all the rooms in the system and prints out the members of each room.
+     if the file name argument is provided then the system also adds the names to the given file_name
+     
+  #### load_people:
+     Usage: load_people (<file_name>)
+     takes a preformatted text file, reads it, extracts the names of people inside the given filename and
+     assigns each to a room
+     
 
+  ### Miscellaneous
+  Meaning not part of the requirements.
+  
+  #### display:
+    Usage: display
+    prints out the current state of the system. prints out a graphical representation of the state of the system, 
+    how and where a certain person name is or where a certain person object is stored as well as lists of 
+    room name of al the rooms yet created
+  
+  #### view_ids:
+    Usage:
+    to reallocate a person you might need their ids; in a case where such is not given then, one can use this 
+    function and print out all people added to the dojo as well as the ids that they gave when being registered 
+    into the system.
+    
  #### Extras:
   > -i, --interactive  Interactive Mode
     -h, --help  Show this screen and exit.
