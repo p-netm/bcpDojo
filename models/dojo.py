@@ -26,20 +26,20 @@ class Dojo(object):
         # will return the length of any list or dictionary passed to it.
         return len(list_arg)
 
-    def instant_room(self, room_type, room_listing, dict, housing_class):
+    def instant_room(self, room_type, room_listing, diction, housing_class):
         """check that a room is non_existent before is is added to list of current rooms:
            implementation is now one fold """
         for i in room_listing:
             try:
-                if i not in dict.keys():
-                    dict[housing_class(str(i)).name] = []
+                if i not in diction.keys():
+                    diction[housing_class(str(i)).name] = []
                     print("An %s called %s has been successfully created!" %
                           (room_type, housing_class(str(i)).name))
                 else:
                     raise ValueError("Room named: %s is already created" % housing_class(str(i)).name)
             except ValueError as error:
                 print(error)
-        return dict
+        return diction
 
     def create_room(self, room_type, parsed_name_list):
         """ uses room_type to decide what type of rooms to create, then loops through
@@ -117,28 +117,116 @@ class Dojo(object):
             else:
                 print("detected an id collision for", staff_obj.person_name)
 
-
-    def assign_office(self, person_object):
+    def assign_office(self, person_object, office_name=""):
         empty_office_dict = self.get_empty_rooms(self.office_dict, 6)
-        try:
-            random_office_key = random.choice(list(empty_office_dict.keys()))
-            self.office_dict[random_office_key].append(person_object.person_name)
-            print(person_object.person_name, "has been allocated the office",
-                  random_office_key)
-            return True
-        except IndexError:
-            return False
+        if not office_name:
+            try:
+                random_office_key = random.choice(list(empty_office_dict.keys()))
+            except IndexError:
+                return False
+        else:
+            random_office_key = office_name
+        self.office_dict[random_office_key].append(person_object.person_name)
+        print(person_object.person_name, "has been allocated the office",
+              random_office_key)
+        return True
 
-    def assign_living_space(self, person_object):
-        try:
-            empty_living_space_dict = self.get_empty_rooms(self.living_space_dict, 4)
-            random_living_key = random.choice(list(empty_living_space_dict.keys()))
-            self.living_space_dict[random_living_key].append(person_object.person_name)
-            print(person_object.person_name, "has been allocated to the living space: ",
-                  random_living_key)
-            return True
-        except IndexError:
-            return False
+    def assign_living_space(self, person_object, space_name=""):
+        empty_living_space_dict = self.get_empty_rooms(self.living_space_dict, 4)
+        if not space_name:
+            try:
+                random_living_key = random.choice(list(empty_living_space_dict.keys()))
+            except IndexError:
+                return False
+        else:
+            random_living_key = space_name
+        self.living_space_dict[random_living_key].append(person_object.person_name)
+        print(person_object.person_name, "has been allocated to the living space: ",
+              random_living_key)
+        return True
+
+    def reallocate_unallocated(self, unallocate_list, person_id):
+        for person in unallocate_list:
+            if person.person_id == person_id:
+                person_of_interest = person
+                # pop from sequence
+                unallocate_list.pop(person_of_interest)
+
+    def reallocate_person(self, person_id, new_room):
+        """ takes in two inputs the personal id and new room name.
+        assign the person identified by the id to a new room name"""
+        # logic: check if id exists; if it does check that room exists and is not full;
+        # if it to exists remove the person with the specified id from all unallocated_lists, and listings
+        # can also be used to assign an unallocated person to a room -> so far not
+
+        if self.id_is_present(person_id):
+            #  first retrieve the room that the person_id is in and then restrict movement
+            #  within that line(living_space or office)
+            double_list = self.retrieve_room(person_id)
+            if new_room in self.office_dict.keys():
+                # the whole logic : remember to consider that staff should not rellocate to living space
+                # unimplemented consideration : reallocating a fellow who does not want accommodation to
+                # a living_space
+                if len(self.office_dict[new_room]) < 6:
+                    # use this section to pop a person from unallocated to office incorporate with double list
+                    if double_list:
+                        if new_room != double_list[0]:
+                            if double_list[1] == "office":
+                                # pop the person name from its current office and append it to the new office
+                                self.office_dict[double_list[0]].pop(double_list[2])
+                                self.office_dict[new_room].append(double_list[2])
+                            else:
+                                print("cannot rellocate from office to living_space")
+                        else:
+                            print("Person already in", new_room)
+                    else:
+                        # implies person is unallcated
+                        self.reallocate_unallocated(self.unallocated_list, person_id)
+                        self.assign_office(self.retrieve_person_by_id(person_id), new_room)
+                else:
+                    print(new_room, "seems to be full.")
+            elif new_room in self.living_space_dict.keys():
+                if len(self.living_space_dict[new_room]) < 4:
+                    # use this section to pop a person from unallocated_space to living_space
+                    if double_list:
+                        if new_room != double_list[0]:
+                            if double_list[1] == "living_space":
+                                # pop the name from current living_space and append it to the new living space
+                                self.living_space_dict[double_list[0]].pop(double_list[2])
+                                self.living_space_dict[new_room].append(double_list[2])
+                            else:
+                                print("cannot rellocate from living_space to office")
+                        else:
+                            print("Person already in", new_room)
+                    else:
+                        # unpop from unallocated living space and give a room
+                        if self.retrieve_person_by_id(person_id).get_type == "fellow":
+                            self.reallocate_unallocated(self.unallocated_living_list, person_id)
+                            self.assign_living_space(self.retrieve_person_by_id(person_id), new_room)
+                        else:
+                            print(" person with id %s is not a fellow and thus cannot be given a living space!..")
+                else:
+                    print(new_room, "seems to be full")
+            else:
+                print("The room " + new_room + "has not yet been created")
+        else:
+            print("no one by the id" + person_id + "was found\n")
+
+    def retrieve_room(self, person_id):
+        """Thought: to return a rooms information from a person_id """
+        # so first retrieve the person name through its person object
+        # then use the person name to identify the name of the office in which the name is listed in the occupants
+        person_obj = self.retrieve_person_by_id(person_id)
+        person_name = person_obj.person_name
+        # now we use the name to get the room
+        for office in self.office_dict.keys():
+            if person_name in self.office_dict[office]:
+                return [office, "office", person_name]
+        for space in self.living_space_dict.keys():
+            if person_name in self.living_space_dict[space]:
+                return [space, "living_space", person_name]
+        # returns a list of the room name and its type; its an index in the respective dictionary
+        return False  # returns false if person is unallocated
 
     def print_room(self, room_name):
         """ Task1: input: room_name
@@ -228,7 +316,6 @@ class Dojo(object):
                 print("succesfully wrote to: ", file_name)
                 file_handler.close()
 
-
     def print_unallocated(self, file_name=""):
         """Task1: Input: nothing; output:  print names of unallocated people on the screen.
          if -o argument is given => dump the names to a text file """
@@ -244,7 +331,6 @@ class Dojo(object):
             print(print_string)
             print(second_print_string)
         self.file_handler_func(total_string, file_name)
-
 
     def load_people(self, file_name):
         """ will take in one compulsory argument, which is the name of the file from which to read data
@@ -371,21 +457,6 @@ class Dojo(object):
             if person.person_id == person_id:
                 return person
         return "no one was found with the id: " + person_id
-
-    def retrieve_room(self, person_id):
-        """Thought: to return a rooms information from a person_id """
-        # so first retrieve the person name through its person object
-        # then use the person name to identify the name of the office in which the name is listed in the occupants
-        person_obj = self.retrieve_person_by_id(person_id)
-        person_name = person_obj.person_name
-        #now we use the name to get the room
-        for office in self.office_dict.keys():
-            if person_name in self.office_dict[office]:
-                return [office, "office", person_name]
-        for space in self.living_space_dict.keys():
-            if person_name in self.living_space_dict[space]:
-                return [space, "living_space", person_name]
-        #returns a list of the room name and its type; its an index in the respective dictionary
 
     def view_person_id(self):
         """Seeing that ids are assigned by the system i thought it wise to include a function that lists
