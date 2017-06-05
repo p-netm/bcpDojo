@@ -2,6 +2,7 @@ __author__ = 'Sudo Pnet'
 from .housing import LivingSpace, Staff, Office, Fellow
 import random
 import re
+import os
 
 
 class Dojo(object):
@@ -149,7 +150,7 @@ class Dojo(object):
                     for list_index in self.living_space_dict[room_name]:
                         print(list_index)
                 else:
-                    print("Not a single soul stored in this room")
+                    print("Not a single soul is in this room")
                     return False
             elif room_name in self.office_dict.keys():
                 if len(self.office_dict[room_name]) > 0:
@@ -166,8 +167,7 @@ class Dojo(object):
     def print_allocations(self, file_name=''):
         """Task1: Input: nothing; output:  print allocations to the screen.
          if -o argument is given => dump the allocations in a text file """
-        """ Retrieve the office_dict and living_space_dict;
-            Loops through them and prints the room name and
+        """ Retrieve the office_dict and living_space_dict;Loops through them and prints the room name and
             comma separated names of the occupants"""
         print_string = ""
         for space_obj in self.living_space_dict.keys():
@@ -198,33 +198,32 @@ class Dojo(object):
         self.file_handler_func(print_string, file_name)
 
     def file_handler_func(self, print_string, file_name):
-        if file_name:
+        """ Writes content to files """
+        if file_name:  # checks if file_name arguments was given
             """ Check if file's content is more than 0, if true; query on an append or overwrite"""
-            try:
-                file_handler = open(file_name, 'r')
-                file_handler.close()
-            except FileNotFoundError as error:
+            file_path = self.return_file_dir(file_name, 'output')
+            if not os.path.exists(file_path):
                 print("\nTrying to create a file called: ", file_name, "\n")
-                file_handler = open(file_name, 'w+')
+                file_handler = open(file_path, 'w+')
                 file_handler.close()
 
-            file_handler = open(file_name, 'r')
+            file_handler = open(file_path, 'r')
             if len(file_handler.read()) > 0:
                 print("**file is not Empty,key in y to append, n to overwrite: ")
                 choice = input()
                 file_handler.close()
                 if choice == 'Y' or choice == 'y':
-                    file_handler = open(file_name, 'a')
+                    file_handler = open(file_path, 'a')
                     file_handler.write(print_string)
                     print("Allocations succesfully appended to: ", file_name)
                     file_handler.close()
                 elif choice == 'N' or choice == 'n':
-                    file_handler = open(file_name, 'w')
+                    file_handler = open(file_path, 'w')
                     file_handler.write(print_string)
                     print("succesfully overwrote: ", file_name)
                     file_handler.close()
             elif len(file_handler.read()) == 0:
-                file_handler = open(file_name, 'w')
+                file_handler = open(file_path, 'w')
                 file_handler.write(print_string)
                 print("succesfully wrote to: ", file_name)
                 file_handler.close()
@@ -234,39 +233,39 @@ class Dojo(object):
         """Task1: Input: nothing; output:  print names of unallocated people on the screen.
          if -o argument is given => dump the names to a text file """
         # first write the print strings then call the file handler function
-        print_string = " names of both the staff and the fellows who did not office allocations"
-        second_print_string = " names of fellows who requested accommodation and are not yet accommodated"
-        # unallocated_living-list contains the names of fellows who requested accommodation and are not yet accommodated
-        # unallocated_list contains the name of both the staff and the fellows who did not office allocations
+        print_string = " \n Names of both staff and fellows who are not allocated to Offices"
+        second_print_string = " \n Names of only Fellows who are not yet allocated to Living Spaces"
         for person in self.unallocated_list:
             print_string += "\n" + person.person_name + "\n"
         for person in self.unallocated_living_list:
             second_print_string += "\n" + person.person_name + "\n"
         total_string = print_string + second_print_string
+        if not file_name:
+            print(print_string)
+            print(second_print_string)
         self.file_handler_func(total_string, file_name)
 
 
     def load_people(self, file_name):
         """ will take in one compulsory argument, which is the name of the file from which to read data
-        from. for each record in this file we can then add_people"""
-        # check if if file exists
-
-        if self.if_file_exists(file_name):
-            multi_list = self.read_file_names(file_name)
+        from. for each record in this file we can then add_people """
+        # retrieve file_path and check if file exists
+        file_path = self.return_file_dir(file_name, 'input')
+        if os.path.isfile(file_path):
+            multi_list = self.read_file_names(file_path)
             for person in multi_list:
-                self.add_person(person[0], person[1], person[2])
+                self.add_person(person[0], person[1], person[2], person[3])
+            return True
         else:
             print("Dojo could not find any file by the name: " + file_name)
             return False
 
-    def if_file_exists(self, file_name):
-        # Task2: this function checks if a file exists; if not it will return False
-        try:
-                file_handler = open(file_name, 'r')
-                file_handler.close()
-                return True
-        except FileNotFoundError as error:
-            return False
+    def return_file_dir(self, file_name, action):
+        """ Task2: identify where a file is supposed to be and return the path, the working directory
+         is bcpDojo/ home directory for the project"""
+        parent_dir = os.getcwd()
+        proper_dir = os.path.join(parent_dir, 'files', action, file_name)
+        return proper_dir
 
     def read_file_names(self, file_name):
         file_handler = open(file_name, 'r')
@@ -280,11 +279,10 @@ class Dojo(object):
         return return_list
 
     def refractor_line_feed(self, temp_list):
-        full_name = temp_list[0] + " " + temp_list[1]
-        occupation = temp_list[2]
+        """ Task2 : takes in a list and refactor the contents accordingly so that they can be properly
+             parsed into the add_person function"""
         temp = []
-        temp.append(full_name)
-        temp.append(occupation)
+        temp.extend([temp_list[0], temp_list[1], temp_list[2]])
         if len(temp_list) == 3:
             temp.append("n")
             return temp
@@ -405,15 +403,19 @@ class Dojo(object):
                 1 the reallocate person should have also been used to allocate unallocated persons to a room.
                 2 i also think that the os.path module can help simplify on the functionality of testing to see
                 if a certain file is existent.
-                2.8 Also on a same note, there is the question that where should a file be so that it can be accessed
-                 by the system; i mean is there some specific place where the user must place a file that is being used
-                 by the system and in what way can we make this process more dynamic and more user friendly
+
                 3 using mock module to simulate a user's input for successful testing --> still very allusive
 
                 5. the return boolean value for sel.id_is_present are inverted
+                6. in several places i find that using the with keyword will shorten code; this are esp. areas
+                    in operning and reading files
 
                                                         RESOLVED
                 4 the add_person maybe can have a fourth parameter that takes in a person's id => the problem
                     is that if we say that a person can be assigned an id after their objects are initialised then
-                    that would mean that we are not fully initialising our objects. -> resolved"HOOORAY"
+                    that would mean that we are not fully initialising our objects. -> resolved
+
+                2.8 Also on a same note, there is the question that where should a file be so that it can be accessed
+                 by the system; i mean is there some specific place where the user must place a file that is being used
+                 by the system and in what way can we make this process more dynamic and more user friendly
                     """
