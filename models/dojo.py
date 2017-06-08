@@ -3,6 +3,9 @@ from .housing import LivingSpace, Staff, Office, Fellow
 import random
 import re
 import os
+from .migration import Person, Office as db_office, Living_space as db_space, base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class Dojo(object):
@@ -77,7 +80,7 @@ class Dojo(object):
         if occupation == "fellow":
             if accommodate == "yes" or accommodate == "y":
                 fellow_obj = Fellow(str(person_name), person_id)
-                if self.id_is_present(fellow_obj.person_id):
+                if not self.id_is_present(fellow_obj.person_id):
                     self.fellow_list.append(fellow_obj)
                     # randomise adding this fellow to the living_space_list
                     office_assign_check = self.assign_office(fellow_obj)
@@ -95,7 +98,7 @@ class Dojo(object):
 
             elif accommodate == "no" or accommodate == "n":
                 fellow_obj = Fellow(str(person_name), person_id)
-                if self.id_is_present(fellow_obj.person_id):
+                if not self.id_is_present(fellow_obj.person_id):
                     self.fellow_list.append(fellow_obj)
                     office_assign_check = self.assign_office(fellow_obj)
                     print(fellow_obj.person_name, "has been successfully added")
@@ -107,7 +110,7 @@ class Dojo(object):
 
         elif occupation == "staff":
             staff_obj = Staff(str(person_name), person_id)
-            if self.id_is_present(staff_obj.person_id):
+            if not self.id_is_present(staff_obj.person_id):
                 self.staff_list.append(staff_obj)
                 # add the staff to the office dict ?
                 office_assign_check = self.assign_office(staff_obj)
@@ -162,8 +165,9 @@ class Dojo(object):
         if self.id_is_present(person_id):
             #  first retrieve the room that the person_id is in and then restrict movement
             #  within that line(living_space or office)
-            double_list = self.retrieve_room(person_id)
+
             if new_room in self.office_dict.keys():
+                double_list = self.retrieve_office_room(person_id)
                 # the whole logic : remember to consider that staff should not rellocate to living space
                 # unimplemented consideration : reallocating a fellow who does not want accommodation to
                 # a living_space
@@ -173,7 +177,7 @@ class Dojo(object):
                         if new_room != double_list[0]:
                             if double_list[1] == "office":
                                 # pop the person name from its current office and append it to the new office
-                                self.office_dict[double_list[0]].pop(double_list[2])
+                                self.office_dict[double_list[0]].pop(self.office_dict[double_list[0]].index(double_list[2]))
                                 self.office_dict[new_room].append(double_list[2])
                             else:
                                 print("cannot rellocate from office to living_space")
@@ -185,14 +189,16 @@ class Dojo(object):
                         self.assign_office(self.retrieve_person_by_id(person_id), new_room)
                 else:
                     print(new_room, "seems to be full.")
+
             elif new_room in self.living_space_dict.keys():
+                double_list = self.retrieve_space_room(person_id)
                 if len(self.living_space_dict[new_room]) < 4:
                     # use this section to pop a person from unallocated_space to living_space
                     if double_list:
                         if new_room != double_list[0]:
                             if double_list[1] == "living_space":
                                 # pop the name from current living_space and append it to the new living space
-                                self.living_space_dict[double_list[0]].pop(double_list[2])
+                                self.living_space_dict[double_list[0]].pop(self.living_space_dict[double_list[0]].index(double_list[2]))
                                 self.living_space_dict[new_room].append(double_list[2])
                             else:
                                 print("cannot rellocate from living_space to office")
@@ -204,15 +210,16 @@ class Dojo(object):
                             self.reallocate_unallocated(self.unallocated_living_list, person_id)
                             self.assign_living_space(self.retrieve_person_by_id(person_id), new_room)
                         else:
-                            print(" person with id %s is not a fellow and thus cannot be given a living space!..")
+                            print(" person with id %s is not a fellow and thus cannot be given a living space!.." %
+                                  person_id)
                 else:
                     print(new_room, "seems to be full")
             else:
-                print("The room " + new_room + "has not yet been created")
+                print("The room " + new_room + " has not yet been created")
         else:
-            print("no one by the id" + person_id + "was found\n")
+            print("no one by the id " + person_id + " was found\n")
 
-    def retrieve_room(self, person_id):
+    def retrieve_office_room(self, person_id):
         """Thought: to return a rooms information from a person_id """
         # so first retrieve the person name through its person object
         # then use the person name to identify the name of the office in which the name is listed in the occupants
@@ -222,6 +229,11 @@ class Dojo(object):
         for office in self.office_dict.keys():
             if person_name in self.office_dict[office]:
                 return [office, "office", person_name]
+        return False
+
+    def retrieve_space_room(self, person_id):
+        person_obj = self.retrieve_person_by_id(person_id)
+        person_name = person_obj.person_name
         for space in self.living_space_dict.keys():
             if person_name in self.living_space_dict[space]:
                 return [space, "living_space", person_name]
@@ -376,11 +388,105 @@ class Dojo(object):
             temp.append(temp_list[3])
             return temp
 
-    def save_state(self):
-        pass
 
-    def load_state(self):
-        pass
+    def save_state(self, db_name="state.sqlite"):
+        """ Task3: consume the dojo instance, parse data to save function from migration"""
+        # decided to start with room_names
+        dir = self.return_file_dir(db_name, "database")
+        if os.path.exists(dir):
+            pass
+        else:
+            open(dir, 'w+')
+            print(db_name, "database created")
+
+        engine = create_engine('sqlite:///' + dir)
+        base.metadata.bind = engine
+        base.metadata.create_all(engine)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        for room_instance in self.office_dict.keys():
+            session.add(db_office(room_instance))
+        for room_name in self.living_space_dict.keys():
+            session.add(db_space(room_name))
+
+        def add_people(person, office_name, space_name):
+            if office_name and space_name:
+                # def __init__(self, id, f_name, occupation, office="None", space="None")
+                session.add(Person(id=person.person_id, f_name=person.person_name, occupation=person.get_type,
+                                   office=office_name, space=space_name))
+            elif office_name and not space_name:
+                session.add(Person(id=person.person_id, f_name=person.person_name, occupation=person.get_type,
+                                   office=office_name))
+            elif not office_name and space_name:
+                session.add(Person(id=person.person_id, f_name=person.person_name, occupation=person.get_type,
+                                   space=space_name))
+            elif not office_name and not space_name:
+                session.add(Person(id=person.person_id, f_name=person.person_name, occupation=person.get_type))
+
+        for person in self.fellow_list:
+            office_name = self.retrieve_office_room(person.person_id)
+            space_name = self.retrieve_space_room(person.person_id)
+            add_people(person, office_name, space_name)
+        for person in self.staff_list:
+            office_name = self.retrieve_office_room(person.person_id)
+            space_name = self.retrieve_space_room(person.person_id)
+            add_people(person, office_name, space_name)
+            # there is a problem here ___##################################################
+
+        session.commit()
+
+    def load_state(self, db_file):
+        """ more like reverse engineering the above method"""
+        # retrieve all rooms,
+        dir = self.return_file_dir(db_file, "database")
+        if os.path.exists(dir):
+            # our loading database logic
+            engine = create_engine('sqlite:///' + dir)
+            base.metadata.bind = engine
+            base.metadata.create_all(engine)
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            # query statements
+            # we load offices and spaces first
+            for office_name, space_name in session.query(db_office, db_space).all():
+                self.office_dict[office_name] = list()
+                self.living_space_dict[space_name] = list()
+            # we then load people
+            for person in session.query(Person).filter(Person.office_name == 'None').filter(Person.living_space_name == 'None'):
+                # create_ this person's object and append it to the relevant lists/ dictionaries
+                if person.occupation == "fellow":
+                    person_obj = Fellow(person.full_name, person.person_id)
+                    self.fellow_list.append(person_obj)
+                    self.unallocated_list.append(person_obj)
+                elif person.occupation == "staff":
+                    person_obj = Staff(person.full_name, person.person_id)
+                    self.staff_list.append(person_obj)
+                    self.unallocated_list.apend(person_obj)
+            for person in session.query(Person).filter(Person.office_name != 'None').filter(Person.living_space_name == 'None'):
+                # people who have offices buut no livng_space
+                if person.occupation == "fellow":
+                    person_obj = Fellow(person.full_name, person.person_id)
+                    self.fellow_list.append(person_obj)
+                    self.unallocated_living_list.append(person_obj)
+                    self.office_dict[person.office_name].append(person.full_name)
+                if person.occupation == "staff":
+                    person_obj = Staff(person.full_name, person.person_id)
+                    self.staff_list.append(person_obj)
+                    self.office_dict[person.office_name].append(person.full_name)
+            for person in session.query(Person).filter(Person.office_name != 'None'). filter(Person.living_space_name != 'None'):
+                if person.occupation == "staff":
+                    raise TypeError("staff should not have an living space")
+                elif person.occupation == "fellow":
+                    person_obj = Fellow(person.full_name, person.person_id)
+                    self.fellow_list.append(person_obj)
+                    self.office_dict[person.office_name].append(person.full_name)
+                    self.living_space_dict[person.living_space_name].append(person.full_name)
+
+        else:
+            print("database was not found")
+            return False
 
     def get_empty_rooms(self, current_diction, max_num_of_rooms):
         """ gets a diction with rooms that are full and others that are not full
@@ -443,9 +549,9 @@ class Dojo(object):
         # then checks if the parsed in id is present and then returns True or False
         all_ids = self.get_all_ids()
         if person_id in all_ids:
-            return False
-        else:
             return True
+        else:
+            return False
 
     def retrieve_person_by_id(self, person_id):
         """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id
@@ -467,21 +573,45 @@ class Dojo(object):
         for person in self.staff_list:
             print(person.person_name, ": ", person.person_id)
 
-
-
         """                                     NOTES
             CONSIDERATIONS:
-                1 the reallocate person should have also been used to allocate unallocated persons to a room.
-                2 i also think that the os.path module can help simplify on the functionality of testing to see
-                if a certain file is existent.
 
-                3 using mock module to simulate a user's input for successful testing --> still very allusive
+                3 using mock module to simulate a user's input for successful testing -->
 
-                5. the return boolean value for sel.id_is_present are inverted
                 6. in several places i find that using the with keyword will shorten code; this are esp. areas
                     in operning and reading files
 
+
+                7. just a thought, whatif the person's object did track their allocation status i think this would
+                be quite computationaly significant.
+                8. remove the broker stage between the application and the database, the stage where there is pending
+                data within the system that is yet to be commited, this is to help secure against system failure.
+                9. a user cannot load state unless he/she has saved the state --> to avoid session data collision
+                10. quiz: if we tried saving data that is already in the database what happens
+                11. correcty review the logic of especially how fellow who requested accomodation and did not recieve
+                is handled when being saved to the database as well as being retrieved
+                12 i find there is still an issue with input file loaded data because of person ids; i think i
+                     the way about this randomising the id process where one is not given
+
+                                            ADDITIONAL FEATURES
+                1.add text conditional coloring
+                2. consider adding  a gui
+                3. rename_room
+                4. delete_room
+                    maybe we can say modify room with optional flags that specify whether rename or delete
+                5.modify person: flags: remove_person, modify any property of a person's data including the id, name, and
+                    occupation. the last however is onedirectional, only fellows can become staff and nor vice versa
+                6.Print_room: considerations : the general output lookout, add csv output support, add printing capabilities
+                7.Print_allocations: styling, csv output support; add physical print capabilities
+                8. print_unallocations: styling, consider csv output; consider physical print
+                9: reallocate Person level seems not to have a way in which it can be upgraded
+                10. load_people: Addd csv input capabilities,
+
                                                         RESOLVED
+                1 the reallocate person should have also been used to allocate unallocated persons to a room.
+                2 i also think that the os.path module can help simplify on the functionality of testing to see
+                if a certain file is existent.
+                5. the return boolean value for sel.id_is_present are inverted
                 4 the add_person maybe can have a fourth parameter that takes in a person's id => the problem
                     is that if we say that a person can be assigned an id after their objects are initialised then
                     that would mean that we are not fully initialising our objects. -> resolved
