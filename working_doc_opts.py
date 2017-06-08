@@ -8,6 +8,8 @@ Usage:
     Dojo print_allocations [<file_name>]
     Dojo load_people (<file_name>)
     Dojo reallocate_person (<person_id>) (<new_room_name>)
+    Dojo save_state [--db=database]
+    Dojo load_state <sqlite_database>
     Dojo display
     Dojo view_ids
     Dojo (-i | --interactive)
@@ -136,6 +138,19 @@ class MyInteractive (cmd.Cmd):
         person_id = arg['<person_id>']
         new_room = arg['<new_room_name>']
         self.dojo.reallocate_person(person_id, new_room)
+
+    @docopt_cmd
+    def do_save_state(self, arg):
+        """Usage: save_state [--db=sqlite_database] """
+        # print(arg){'--db': '.state.sqlite'}
+        db_file = arg['--db']
+        self.dojo.save_state(db_file)
+
+    @docopt_cmd
+    def do_load_state(self, arg):
+        """Usage: load_state <sqlite_database>  """
+        db_file = arg['<sqlite_database>']
+        self.dojo.load_state(db_file)
 
     @docopt_cmd
     def do_display(self,arg):
