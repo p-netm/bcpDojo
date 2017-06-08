@@ -1,8 +1,8 @@
 __author__ = 'Sudo Pnet'
 import unittest
 
-from bcpDojo.models.dojo import Dojo
-from bcpDojo.models.housing import LivingSpace, Office, Staff, Fellow
+from bcpDojo.sys.dojo import Dojo
+from bcpDojo.sys.housing import LivingSpace, Office, Staff, Fellow
 
 
 class Task0AdditionalUtilityMethods(unittest.TestCase):
@@ -55,21 +55,21 @@ class Task0AdditionalUtilityMethods(unittest.TestCase):
         # Read Me: i changed this implementation so that we can use the number of offices to check of the duplicate rooms
         # were indeed created instead of returning before the program execution has finished
 
-    # def test_duplicate_offices(self):
-    #     # creates a room twice checks if it detects rooms has already been created
-    #
-    #     dojo1 = Dojo()
-    #     initial_dict = dojo1.create_room("office", ['room1'])
-    #     self.assertDictEqual(initial_dict, {'room1': []}, msg="room was not created ")
-    #     statement = "Room named: room1 is already created"
-    #     current_dict = dojo1.create_room('office', ['room1'])
-    #     self.assertEqual("Error raised", current_dict, msg="room should not have been created")
-    #
-    # def test_duplicate_living_spaces(self):
-    #     # create a living_space twice and see  if it throws an error
-    #
-    #     dojo1 = Dojo()
-    #     initial_dict = dojo1.create_room("living_space", ['room1'])
-    #     current_dict = dojo1.create_room("living_space", ['room1'])
-    #     self.assertEqual("Error raised", current_dict, msg="room should not have been created")
-    #
+    def test_duplicate_offices(self):
+        # creates a room twice checks if it detects rooms has already been created
+
+        dojo1 = Dojo()
+        initial_dict = dojo1.create_room("office", ['room1'])
+        self.assertDictEqual(initial_dict, {'room1': []}, msg="room was not created ")
+        statement = "Room named: room1 is already created"
+        current_dict = dojo1.create_room('office', ['room1'])
+        self.assertEqual("Error raised", current_dict, msg="room should not have been created")
+
+    def test_duplicate_living_spaces(self):
+        # create a living_space twice and see  if it throws an error
+
+        dojo1 = Dojo()
+        initial_dict = dojo1.create_room("living_space", ['room1'])
+        current_dict = dojo1.create_room("living_space", ['room1'])
+        self.assertEqual("Error raised", current_dict, msg="room should not have been created")
+

@@ -7,3 +7,6 @@ tests/__pycache__/
 tests/task1_tests.py
 /models/testit.py
 /tests/task2_tests.py
+/tests/testit.py
+/models/migration.py
+!/models/migration.py
