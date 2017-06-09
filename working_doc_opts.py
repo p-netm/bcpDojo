@@ -10,6 +10,10 @@ Usage:
     Dojo reallocate_person (<person_id>) (<new_room_name>)
     Dojo save_state [--db=database]
     Dojo load_state <sqlite_database>
+    Dojo modify_room <room_name> (--r=new_room_name | -d | -D | -c | -C)
+    Dojo modify_person <person_identifier> [--id=new_id ][ --first_name=new_name ][ --second_name=new_name ][ -d]
+    Dojo promote_person <person_identifier>
+    Dojo search_id <any_name>
     Dojo display
     Dojo view_ids
     Dojo (-i | --interactive)
@@ -20,6 +24,18 @@ Options:
     print_room  shows the people inside a room
     print_allocation  shows all people who have been allocated to any and all rooms
     add_person  adds a new fellow or staff
+    modify_room  you can change any attribute of any room
+    --r=new_room_name  rename the given room to a new room name
+    -d  delete
+    -D  same as -d but also reallocates people to any other available room
+    -c  clears a room's occupants
+    -C  empty the room as -c and also reassigns occupants to new rooms
+    modify_person  change any property of stored data in regard to the given person
+    --id=new_id  assign a new id
+    --first_name=new_name  assign a new name to the first_name
+    --second_name=new_name  assign a new second name
+    promote_person  unidirectional upgrade from fellow to staff, never vice versa
+    search_id  prints to console a lists of full names and their associative ids
     -i, --interactive  Interactive Mode
     -h, --help  Show this screen and exit.
 """
@@ -27,7 +43,7 @@ Options:
 import sys
 import cmd
 from docopt import docopt, DocoptExit
-from models.dojo import Dojo
+from program.dojo import Dojo
 
 
 def docopt_cmd(func):
@@ -153,7 +169,27 @@ class MyInteractive (cmd.Cmd):
         self.dojo.load_state(db_file)
 
     @docopt_cmd
-    def do_display(self,arg):
+    def do_modify_room(self, arg):
+        """Usage: modify_room <room_name> (--r=new_room_name | -d | -D | -c | -C) """
+        print(arg)
+
+    @docopt_cmd
+    def do_modify_person(self, arg):
+        """Usage: modify_person <person_identifier> [--id=new_id ][ --first_name=new_name ][ --second_name=new_name ][ -d]"""
+        print(arg)
+
+    @docopt_cmd
+    def do_search_id(self, arg):
+        """Usage: search_id <any_name> """
+        print(arg)
+
+    @docopt_cmd
+    def do_promote_person(self, arg):
+        """Usage: promote_person <person_identifier> """
+        print(arg)
+
+    @docopt_cmd
+    def do_display(self, arg):
         """ Usage: display"""
         self.dojo.display()
 
