@@ -2,11 +2,13 @@ idea/
 /__pycache__/
 testit.py
 /.cache/
-models/__pycache__/
+program/__pycache__/
 tests/__pycache__/
 tests/task1_tests.py
-/models/testit.py
+/bcpDojo/sys/testit.py
 /tests/task2_tests.py
 /tests/testit.py
-/models/migration.py
-!/models/migration.py
+/bcpDojo/sys/migration.py
+!/bcpDojo/sys/migration.py
+!/tests/task1_tests.py
+!/tests/task2_tests.py
