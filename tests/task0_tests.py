@@ -1,7 +1,7 @@
 import unittest
 
-from bcpDojo.sys.dojo import Dojo
-from bcpDojo.sys.housing import LivingSpace, Office, Staff, Fellow
+from bcpDojo.program.dojo import Dojo
+from bcpDojo.program.housing import LivingSpace, Office, Staff, Fellow
 
 
 class InstancesTests(unittest.TestCase):
