@@ -10,8 +10,8 @@ Usage:
     Dojo reallocate_person (<person_id>) (<new_room_name>)
     Dojo save_state [--db=database]
     Dojo load_state <sqlite_database>
-    Dojo modify_room <room_name> (--r=new_room_name | -d | -D | -c | -C)
-    Dojo modify_person <person_identifier> [--id=new_id ][ --first_name=new_name ][ --second_name=new_name ][ -d]
+    Dojo modify_room [office | living_space] <room_name> (--r=new_room_name | -d | -D | -c | -C)
+    Dojo modify_person <person_identifier> [--id=new_id ] [ --first_name=new_name ] [ --second_name=new_name ] [ -d]
     Dojo promote_person <person_identifier>
     Dojo search_id <any_name>
     Dojo display
@@ -170,7 +170,17 @@ class MyInteractive (cmd.Cmd):
 
     @docopt_cmd
     def do_modify_room(self, arg):
-        """Usage: modify_room <room_name> (--r=new_room_name | -d | -D | -c | -C) """
+        """Usage: modify_room [office | living_space] <room_name> (--r=new_room_name | -d | -D | -c | -C) """
+        room_name = arg['<room_name>']
+        new_room_name = arg['--r']
+        room_type = False
+        if arg['office']:
+            room_type = "office"
+        elif arg['living_space']:
+            room_type = "living_space"
+        d, D, c , C = arg['-d'], arg['-D'], arg['-c'], arg['-C']
+        # modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False)
+        self.dojo.modify_room(room_name=room_name, room_type=room_type, new_name=new_room_name, d=d, D=D, c=c, C=C)
         print(arg)
 
     @docopt_cmd

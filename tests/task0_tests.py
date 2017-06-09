@@ -11,7 +11,6 @@ class InstancesTests(unittest.TestCase):
         self.fellow1 = Fellow("fellow_name", '1235687')
         self.office1 = Office("office_name")
 
-    @unittest.skip
     def test_if_instance(self):
         self.assertIsInstance(self.staff1.person_id, str,
                               msg=" the staff id should be a string")
@@ -87,3 +86,49 @@ class TestsForTask0(unittest.TestCase):
         self.assertEqual(current_length - initial_length, 1,
                          msg=" fellow created should add to the fellow list count")
 
+    def test_modify_room_function(self):
+        """test to see that room attributes change accordingly. """
+        pass
+
+
+class SearchName(unittest.TestCase):
+    def setUp(self):
+        self.util = Dojo()
+        # load 2 rooms , load 2 space, load 2 fellows, load 2 staff
+        self.util.create_room("office", ['mombasa', 'Nairobi'])
+        self.util.create_room("living_space", ['21', '22'])
+        self.util.add_person('Peter', 'Muriuki', 'fellow', 'y', '89702323')
+        self.util.add_person('Dennis', 'Njuguna', 'fellow', 'n', '5687432')
+        self.util.add_person('James', 'Mwendia', 'staff', 'n', '4421222')
+        self.util.add_person('derrick', 'Muriithi', 'staff', 'n', '2162187')
+
+    def tearDown(self):
+        # please go through a proper definition of what this is supposed to do
+        del(self.util)
+
+    def test_search_name_function(self):
+        """ This function is given a name and returns the type of the object with that name as a string"""
+        # normal operations
+        self.assertEqual(self.util.search_name('mombasa'), "Office")
+        self.assertEqual(self.util.search_name('21'), "LivingSpace")
+        self.assertEqual(self.util.search_name('peter muriuki'), 'Fellow')
+        self.assertEqual(self.util.search_name('james mwendia'), 'Staff')
+
+        # search using a single word, add a person with the same name as a room, and repeat
+        self.assertEqual(self.util.search_name('dennis njuguna'), "Fellow")
+        self.util.add_person('Nairobi', 'Muriuki', 'fellow', 'y', '32320798')
+        self.assertEqual(self.util.search_name('nairobi', category='person'), 'Fellow')
+
+    def test_modify_room_name_function(self):
+        """This function checks that the renamed room changes room name"""
+        self.util.modify_room_name('mombasa', new_room_name="kutus", room_type='office')
+        self.assertIn('kutus', self.util.office_dict.keys())
+        self.assertNotIn('mombasa', self.util.office_dict.keys())
+
+    def test_delete_room_function(self):
+        """This function checks that a room ceases to exist after deletion and allocated users reduce"""
+        # we create a room and delete it
+        self.util.create_room('office', ['kerugoya'])
+        self.assertIn('kerugoya', self.util.office_dict.keys())
+        self.util.delete_room('kerugoya')
+        self.assertNotIn('kerugoya', self.util.office_dict.keys())

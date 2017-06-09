@@ -11,11 +11,9 @@ from sqlalchemy.orm import sessionmaker
 class Dojo(object):
 
     def __init__(self):
-        """ The Dojo class contains the required utilities that will
-        automate the process of calling instances of the other classes
-        think of it as the main logic area that links the class' models and
-        the arguments parsed through the docopt in order to accomplish certain
-        defined tasks.
+        """ The Dojo class contains the required utilities that will automate the process of calling
+        instances of the other classes think of it as the main logic area that links the class' models
+        and the arguments parsed through the docopt in order to accomplish certain defined tasks.
         """
         self.unallocated_list = []
         self.unallocated_living_list = []
@@ -46,18 +44,66 @@ class Dojo(object):
 
     def create_room(self, room_type, parsed_name_list):
         """ uses room_type to decide what type of rooms to create, then loops through
-        room_name_list creating a room for each element in the list"""
+        parsed_name_list creating a room for each element in the list"""
         for i in parsed_name_list:
             if not str.isalnum(str(i)):
                 return "Invalid room name"
         if room_type == "living_space":
-            self.instant_room(room_type, parsed_name_list, self.living_space_dict, LivingSpace)
+            diction = self.instant_room(room_type, parsed_name_list, self.living_space_dict, LivingSpace)
         if room_type == "office":
-            self.instant_room(room_type, parsed_name_list, self.office_dict, Office)
+            diction = self.instant_room(room_type, parsed_name_list, self.office_dict, Office)
+        return diction
+
+    def modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False):
+        pass
+
+    def modify_room_name(self, room_name, new_room_name, room_type):
+        # first retrieve the room name
+        if room_type == "office":
+            if room_name in self.office_dict.keys():
+                # assign the value for room_name to new_room_name then pop room_name
+                self.office_dict[new_room_name] = self.office_dict[room_name]
+                self.office_dict.pop(room_name)
+                print("%s changed to %s" % (room_name, new_room_name))
+            else:
+                print("there is no office with the name: %s" % room_name)
+        elif room_type == "living_space":
+            if room_name in self.living_space_dict.keys():
+                self.living_space_dict[new_room_name] = self.living_space_dict[room_name]
+                self.living_space_dict.poop(room_name)
+                print("%s changed to %s" % (room_name, new_room_name))
+            else:
+                print("there is no office with the name: %s" % room_name)
+        else:
+            if self.search_name(room_name) == "Office":
+                if room_name in self.office_dict.keys():
+                # assign the value for room_name to new_room_name then pop room_name
+                    self.office_dict[new_room_name] = self.office_dict[room_name]
+                    self.office_dict.pop(room_name)
+                    print("%s changed to %s" % (room_name, new_room_name))
+                else:
+                    print("there is no office with the name: %s" % room_name)
+            elif self.search_name(room_name) == "LivingSpace":
+                if room_name in self.living_space_dict.keys():
+                    self.living_space_dict[new_room_name] = self.living_space_dict[room_name]
+                    self.living_space_dict.poop(room_name)
+                    print("%s changed to %s" % (room_name, new_room_name))
+                else:
+                    print("there is no office with the name: %s" % room_name)
+
+    def delete_room(self, room_name):
+        # first empty the room then pop the room
+        pass
+
+    def delete_reasign(self, room_name):
+        # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
+        pass
 
     def set_person_id(self, person_id):
-        """ Task0: set a person's id """
+        """ Task0: set a person's id ; if id is not given, ask for it
+         else if id is not given and select flag is set then generate a random"""
         bool_counter = person_id
+        input_id = person_id
         while bool_counter == None:
             print('Please type in your id(q to quit): ')
             input_id = str(input())
@@ -71,6 +117,7 @@ class Dojo(object):
         if bool_counter == 'select':
             input_id = random.randrange(0000000, 99999999 + 1)
             return input_id
+        return input_id
 
     def add_person(self, first_name, second_name, occupation, accommodate="n", id=None):
         """ uses occupation and decides what constructor of either the subclasses
@@ -253,14 +300,14 @@ class Dojo(object):
                     for list_index in self.living_space_dict[room_name]:
                         print(list_index)
                 else:
-                    print("Not a single soul is in this room")
+                    print("No one has yet been allocated to this Living space")
                     return False
             elif room_name in self.office_dict.keys():
                 if len(self.office_dict[room_name]) > 0:
                     for list_index in self.office_dict[room_name]:
                         print(list_index)
                 else:
-                    print("Not a single soul is in this room")
+                    print("No one has yet been allocted to this office")
                     return False
             print("End of file reached")
         else:
@@ -517,24 +564,28 @@ class Dojo(object):
         print("unallocate_list", self.unallocated_list)
         print("unallocated_living_list", self.unallocated_living_list, "\n")
 
-    def search_name(self, search_parameter):
+    def search_name(self, search_parameter, category=None):
         """" Task1: Takes in a str name of any object and finds the object associated with that string"""
+        # i need an alternative implementation where you can use one word to search for a person -> maybe use
+        # aditional optional arguments to check through; category can take "person" or "room"
 
+        def selective_search_name(search_parameter):
+            for person in self.fellow_list:
+                if search_parameter in person.person_name:
+                    return "Fellow"
+            for person in self.staff_list:
+                if search_parameter in person.person_name:
+                    return "Staff"
+        if category == "person":
+            return selective_search_name(search_parameter)
         if len(re.findall('\S+', search_parameter)) < 2:
             if search_parameter in self.living_space_dict:
                 return "LivingSpace"
             elif search_parameter in self.office_dict:
                 return "Office"
         elif len(re.findall('\S+', search_parameter)) >= 2:
-            for i in self.unallocated_list:
-                if i.person_name == search_parameter:
-                    return i.get_type
-            for i in self.fellow_list:
-                if i.person_name == search_parameter:
-                    return i.get_type
-            for i in self.staff_list:
-                if i.person_name == search_parameter:
-                    return i.get_type
+            return selective_search_name(search_parameter)
+
         return False
 
     def get_all_ids(self):
@@ -597,9 +648,8 @@ is handled when being saved to the database as well as being retrieved
 same name and if we were to use a name to extract the person id i think it would be futile --> i think
 we can have a retrieve_id method that returns all ids of people who have a certain name
 13. add unsopperted document formats. like say except for txt and csv throw an error
-
-
-13 Refractor test files
+14 Refractor test files
+15. the names of Peopla and room_names are Nouns and should be capitalized, show some respect
 
                             ADDITIONAL FEATURES
 1.add text conditional coloring

@@ -10,8 +10,7 @@ class TestsForPrintRoom(unittest.TestCase):
         self.dojo = Dojo()
 
     def tests_room_if_non_existent(self):
-        """ checks that it throws an error if the room is non-existent"""
-
+        """ checks that printing a non_existent room returns False"""
         self.assertEqual(self.dojo.print_room("bdhsgfa"),
                               False, msg="print room should first check that there is such a room")
     def test_get_type(self):
