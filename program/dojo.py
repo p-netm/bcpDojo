@@ -55,7 +55,11 @@ class Dojo(object):
         return diction
 
     def modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False):
-        pass
+        if new_name:
+            self.modify_room_name(room_name, new_name, room_type)
+        if d:
+            """ We are gona delete a room"""
+            self.delete_room(room_name)
 
     def modify_room_name(self, room_name, new_room_name, room_type):
         # first retrieve the room name
@@ -95,7 +99,7 @@ class Dojo(object):
         # first empty the room then pop the room
         pass
 
-    def delete_reasign(self, room_name):
+    def delete_reassign(self, room_name):
         # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
         pass
 
@@ -171,7 +175,7 @@ class Dojo(object):
                 print("detected an id collision for", staff_obj.person_name)
 
     def assign_office(self, person_object, office_name=""):
-        empty_office_dict = self.get_empty_rooms(self.office_dict, 6)
+        empty_office_dict = self.get_empty_rooms(self.office_dict, 4)
         if not office_name:
             try:
                 random_office_key = random.choice(list(empty_office_dict.keys()))
@@ -185,7 +189,7 @@ class Dojo(object):
         return True
 
     def assign_living_space(self, person_object, space_name=""):
-        empty_living_space_dict = self.get_empty_rooms(self.living_space_dict, 4)
+        empty_living_space_dict = self.get_empty_rooms(self.living_space_dict, 6)
         if not space_name:
             try:
                 random_living_key = random.choice(list(empty_living_space_dict.keys()))
@@ -293,23 +297,26 @@ class Dojo(object):
     def print_room(self, room_name):
         """ Task1: input: room_name
         takes that room_name and prints all the people allocated to that room """
+        serial = 0
         if self.search_name(room_name):
             print('x'*12, '==> ', room_name.upper(), ' <==', 'x'*12, '\n')
             if room_name in self.living_space_dict.keys():
                 if len(self.living_space_dict[room_name]) > 0:
                     for list_index in self.living_space_dict[room_name]:
-                        print(list_index)
+                        serial += 1
+                        print("\t" + str(serial) + ").", list_index)
                 else:
                     print("No one has yet been allocated to this Living space")
                     return False
             elif room_name in self.office_dict.keys():
                 if len(self.office_dict[room_name]) > 0:
                     for list_index in self.office_dict[room_name]:
-                        print(list_index)
+                        serial += 1
+                        print("\t" + str(serial) + ").", list_index)
                 else:
-                    print("No one has yet been allocted to this office")
+                    print("No one has yet been allocated to this office")
                     return False
-            print("End of file reached")
+            print("\nEnd of file reached")
         else:
             print("Room_", room_name, "was not found")
             return False
@@ -324,10 +331,10 @@ class Dojo(object):
             if len(self.living_space_dict[space_obj]) == 0:
                 pass  # i do not know yet what to do for the rooms that do not have occupants
             elif len(self.living_space_dict[space_obj]) == 1:
-                print_string += "\n" + '(living_space)' + space_obj.upper() + "\n"
+                print_string += "\n" + '(living_space)' + space_obj.upper() + "\n" + "-" * 30 + "\n"
                 print_string += self.living_space_dict[space_obj][len(self.living_space_dict[space_obj]) - 1] + "\n"
             elif len(self.living_space_dict[space_obj]) > 1:
-                print_string += "\n" + '(living_space)' + space_obj + "\n"
+                print_string += "\n" + '(living_space)' + space_obj + "\n" + "-" * 30 + "\n"
                 print_string += "\n" + space_obj.upper() + "\n"
                 for person_index in range(0, len(self.living_space_dict[space_obj]) - 1):
                     print_string += self.living_space_dict[space_obj][person_index] + ", "
@@ -336,16 +343,17 @@ class Dojo(object):
             if len(self.office_dict[office_object]) == 0:
                 pass
             if len(self.office_dict[office_object]) == 1:
-                print_string += "\n" + '(office)' + office_object.upper() + "\n"
+                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 30 + "\n"
                 print_string += self.office_dict[office_object][len(self.office_dict[office_object]) - 1] + "\n"
             if len(self.office_dict[office_object]) > 1:
-                print_string += "\n" + '(office)' + office_object.upper() + "\n"
+                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 30 + "\n"
                 for person_index in range(0, len(self.office_dict[office_object]) - 1):
                     print_string += self.office_dict[office_object][person_index] + ", "
                 print_string += self.office_dict[office_object][len(self.office_dict[office_object]) - 1] + "\n"
         print(print_string)
         # Now for the file handling
         self.file_handler_func(print_string, file_name)
+        return print_string
 
     def file_handler_func(self, print_string, file_name):
         """ Writes content to files """
@@ -437,7 +445,6 @@ class Dojo(object):
         elif len(temp_list) == 4:
             temp.append(temp_list[3])
             return temp
-
 
     def save_state(self, db_name="state.sqlite"):
         """ Task3: consume the dojo instance, parse data to save function from migration"""
@@ -627,58 +634,3 @@ class Dojo(object):
         for person in self.staff_list:
             print(person.person_name, ": ", person.person_id)
 
-"""                                     NOTES
-CONSIDERATIONS:
-
-3 using mock module to simulate a user's input for successful testing -->
-
-6. in several places i find that using the with keyword will shorten code; this are esp. areas
-    in operning and reading files
-
-
-7. just a thought, whatif the person's object did track their allocation status i think this would
-be quite computationaly significant.
-8. remove the broker stage between the application and the database, the stage where there is pending
-data within the system that is yet to be commited, this is to help secure against system failure.
-9. a user cannot load state unless he/she has saved the state --> to avoid session data collision
-10. quiz: if we tried saving data that is already in the database what happens
-11. correcty review the logic of especially how fellow who requested accomodation and did not recieve
-is handled when being saved to the database as well as being retrieved
-12. there is the conundrum of how to get an id from a person's name: see several people could share a
-same name and if we were to use a name to extract the person id i think it would be futile --> i think
-we can have a retrieve_id method that returns all ids of people who have a certain name
-13. add unsopperted document formats. like say except for txt and csv throw an error
-14 Refractor test files
-15. the names of Peopla and room_names are Nouns and should be capitalized, show some respect
-
-                            ADDITIONAL FEATURES
-1.add text conditional coloring
-2. consider adding  a gui
-3. rename_room
-4. delete_room
-    maybe we can say modify room with optional flags that specify whether rename or delete
-5.modify person: flags: remove_person, modify any property of a person's data including the id, name, and
-    occupation. the last however is onedirectional, only fellows can become staff and nor vice versa
-6.Print_room: considerations : the general output lookout, add csv output support, add printing capabilities
-7.Print_allocations: styling, csv output support; add physical print capabilities
-8. print_unallocations: styling, consider csv output; consider physical print
-9: reallocate Person level seems not to have a way in which it can be upgraded
-10. load_people: Addd csv input capabilities,
-
-                                        RESOLVED
-
-1 the reallocate person should have also been used to allocate unallocated persons to a room.
-2 i also think that the os.path module can help simplify on the functionality of testing to see
-if a certain file is existent.
-5. the return boolean value for sel.id_is_present are inverted
-4 the add_person maybe can have a fourth parameter that takes in a person's id => the problem
-    is that if we say that a person can be assigned an id after their objects are initialised then
-    that would mean that we are not fully initialising our objects. -> resolved
-
-2.8 Also on a same note, there is the question that where should a file be so that it can be accessed
- by the system; i mean is there some specific place where the user must place a file that is being used
- by the system and in what way can we make this process more dynamic and more user friendly
-
- 12 i find there is still an issue with input file loaded data because of person ids; i think i
-     the way about this randomising the id process where one is not given
-    """

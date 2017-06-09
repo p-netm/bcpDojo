@@ -51,10 +51,6 @@ class testsForReallocatePerson(unittest.TestCase):
                                                                ['KELLY', 'McGUIRE', 'STAFF', 'n']],
                              msg=" does not properly extract the names of people in the load people file")
 
-    # def test_refactor_line_feed_problem(self):
-    #     """ tested in read_files_names_function  check for secondary conditions e.g. wrong input"""
-    #     pass
-
     def test_if_load_people_adds_number_of_people(self):
         """ will check to see if the number of fellows or staff increase accordingly, after adding them to the system """
         dojo = Dojo()
@@ -84,7 +80,7 @@ class testsForReallocatePerson(unittest.TestCase):
     def test_return_file_directory(self):
         dojo = Dojo()
         self.assertEqual(dojo.return_file_dir( 'any', 'input'),
-                         "C:\\Users\\Sudo Pnet\\Desktop\\thisisit\\bcpDojo\\tests\\files\\intput\\any" )
+                         "C:\\Users\\Sudo Pnet\\Desktop\\thisisit\\bcpDojo\\tests\\files\\input\\any" )
         self.assertEqual(dojo.return_file_dir( 'other.txt', 'output'),
                          "C:\\Users\\Sudo Pnet\\Desktop\\thisisit\\bcpDojo\\tests\\files\\output\\other.txt")
 

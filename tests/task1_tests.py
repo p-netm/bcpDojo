@@ -1,5 +1,6 @@
 __author__ = 'Sudo Pnet'
 import unittest
+import os
 
 from bcpDojo.program.dojo import Dojo
 from bcpDojo.program.housing import LivingSpace, Office, Staff, Fellow
@@ -8,6 +9,9 @@ from bcpDojo.program.housing import LivingSpace, Office, Staff, Fellow
 class TestsForPrintRoom(unittest.TestCase):
     def setUp(self):
         self.dojo = Dojo()
+
+    def tearDown(self):
+        del(self.dojo)
 
     def tests_room_if_non_existent(self):
         """ checks that printing a non_existent room returns False"""
@@ -39,15 +43,22 @@ class TestsForPrintRoom(unittest.TestCase):
         self.assertEqual(self.dojo.print_room('office123'), False,
                          msg="if the room is not occupied, print room should return False")
 
-    class TestPrintAllocations(unittest.TestCase):
-        def setUp(self):
-            self.dojo = Dojo()
+class TestPrintAllocations(unittest.TestCase):
+    def setUp(self):
+        self.dojo = Dojo()
+        self.dojo.create_room('office', ['blue', 'black'])
+        self.dojo.create_room('living_space', ['nakuru', 'mombasa'])
+        parent_dir = os.path.dirname(os.getcwd())
+        file_dir = os.path.join(parent_dir, 'files', 'input', 'load.txt')
+        self.dojo.load_people(file_dir)
+
+    def tearDown(self):
+        del(self.dojo)
 
     def test_against_golden_file(self):
-        pass
-
-    def test_against_a_formatted_string(self):
-        pass
+        """ we are to read from a formatted file and assert the return strings are the same """
+        # here we can only hope to use regular expresions to determine that our printed file conforms
 
     def test_if_it_creates_a_file_if_not_found(self):
+        # we are actually testing the file_handler_func()
         pass
