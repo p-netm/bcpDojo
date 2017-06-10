@@ -1,8 +1,8 @@
 import unittest
 import os.path
 
-from .models.dojo import Dojo
-from .models.housing import LivingSpace, Office, Staff, Fellow
+from .program.dojo import Dojo
+from .program.housing import LivingSpace, Office, Staff, Fellow
 
 class Task2tests(unittest.TestCase):
     def setup(self):
