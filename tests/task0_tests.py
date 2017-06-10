@@ -132,3 +132,12 @@ class SearchName(unittest.TestCase):
         self.assertIn('kerugoya', self.util.office_dict.keys())
         self.util.delete_room('kerugoya')
         self.assertNotIn('kerugoya', self.util.office_dict.keys())
+
+    def test_search_id_for_function(self):
+        """if two people share a common name, one name, both-names, returns alist of ids, retrun empty list if none """
+        self.util.add_person('Peter', 'Muriuki', 'fellow', 'y', '89702313')
+        self.util.add_person('Keneth', 'Muriuki', 'staff', 'n', '89702343')
+        self.util.add_person('Peter', 'Muriuki', 'fellow', 'n', '89702393')
+        self.assertTrue(type(self.util.search_id_for('peter')) is list)
+        self.assertEqual(3, len(self.util.search_id_for('peter')))
+        self.assertEqual(4, len(self.util.search_id_for('muriuki')))

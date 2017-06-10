@@ -25,7 +25,7 @@ we can have a retrieve_id method that returns all ids of people who have a certa
    where the names of people say assigned a particular office are listed in the confirmation message as a sequence
 17. it so happens that you can load people from the same txt file several times, how can this be avoided???
 18. see to it that display function displays data in a tabulated form
-19 a fellow having a living space but no office
+
 
                             ADDITIONAL FEATURES
 1.add text conditional coloring
@@ -58,3 +58,5 @@ if a certain file is existent.
  12 i find there is still an issue with input file loaded data because of person ids; i think i
      the way about this randomising the id process where one is not given
     """
+19 a fellow having a living space but no office --> then he would be in the unllalocated list but not in the
+unallocated living list

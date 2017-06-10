@@ -16,7 +16,7 @@ class Dojo(object):
         and the arguments parsed through the docopt in order to accomplish certain defined tasks.
         """
         self.unallocated_list = []
-        self.unallocated_living_list = []
+        self.unallocated_living_list = []  # contains only fellow objects who requested accommodation but did not get
         self.staff_list = []
         self.fellow_list = []
         self.office_dict = {}
@@ -97,7 +97,30 @@ class Dojo(object):
 
     def delete_room(self, room_name):
         # first empty the room then pop the room
-        pass
+        # if room is an office: all deleted fellows and staff will be appended to the unallocated list
+        # else if the room is a living_space fellows only will be appended to the unallocated living_list
+        if self.search_name(room_name) == "Office":
+            for person_name in self.office_dict[room_name]:
+                # the problem here is if should we try to retrieve a person's object by use of a name, then
+                # we could end up in big trouble if two people share the same name and the system ends up returning
+                # the wrong object.
+                # maybe we could use the get names by id and if returns a list of more than len 1, then we know we
+                # are in deep shit
+                if len(self.search_id_for(person_name)) == 1:
+                    # now we can act, retrieve the person object
+                    person_obj = self.retrieve_person_by_name(person_name)
+                    self.unallocated_list.append(person_obj)
+                else:
+                    raise Exception("AmbiguityError")
+            self.office_dict.pop(room_name)
+        if self.search_name(room_name) == "LivingSpace":
+            for person_name in self.living_space_dict[room_name]:
+                if len(self.search_id_for(person_name)) == 1:
+                    person_obj = self.retrieve_person_by_name(person_name)
+                    self.unallocated_living_list.append(person_obj)
+                else:
+                    raise Exception("AmbiguityError")
+            self.living_space_dict.pop(room_name)
 
     def delete_reassign(self, room_name):
         # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
@@ -615,8 +638,7 @@ class Dojo(object):
             return False
 
     def retrieve_person_by_id(self, person_id):
-        """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id
-         or the person's name"""
+        """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id"""
         for person in self.fellow_list:
             if person.person_id == person_id:
                 return person
@@ -624,6 +646,14 @@ class Dojo(object):
             if person.person_id == person_id:
                 return person
         return "no one was found with the id: " + person_id
+
+    def retrieve_person_by_name(self, person_name):
+        for person in self.fellow_list:
+            if person.person_name == person_name:
+                return person
+        for person in self.staff_list:
+            if person.person_name == person_name:
+                return person
 
     def view_person_id(self):
         """Seeing that ids are assigned by the system i thought it wise to include a function that lists
@@ -634,3 +664,24 @@ class Dojo(object):
         for person in self.staff_list:
             print(person.person_name, ": ", person.person_id)
 
+    def search_id_for(self, name, other_name=None):
+        """return a list of people who have the said name """
+        # retrieving a person by a single name regardless of whether its their fast or second
+        # we need a list to append this
+        identity_list = list()
+        if other_name:
+            for person in self.fellow_list:
+                if name in person.person_name and other_name in person.person_name:
+                    identity_list.append("{}    {}".format(person.person_id, person.person_name))
+            for person in self.staff_list:
+                if name in person.person_name and other_name in person.person_name:
+                    identity_list.append("{}    {}".format(person.person_id, person.person_name))
+        else:
+            for person in self.fellow_list:
+                if name in person.person_name:
+                    identity_list.append("{}    {}".format(person.person_id, person.person_name))
+            for person in self.staff_list:
+                if name in person.person_name:
+                    identity_list.append("{}    {}".format(person.person_id, person.person_name))
+        print(identity_list)
+        return  identity_list

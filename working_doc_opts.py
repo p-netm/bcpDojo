@@ -13,7 +13,7 @@ Usage:
     Dojo modify_room [office | living_space] <room_name> (--r=new_room_name | -d | -D | -c | -C)
     Dojo modify_person <person_identifier> [--id=new_id ] [ --first_name=new_name ] [ --second_name=new_name ] [ -d]
     Dojo promote_person <person_identifier>
-    Dojo search_id <any_name>
+    Dojo search_id_for <any_name> [<other_name>]
     Dojo display
     Dojo view_ids
     Dojo (-i | --interactive)
@@ -181,7 +181,6 @@ class MyInteractive (cmd.Cmd):
         d, D, c , C = arg['-d'], arg['-D'], arg['-c'], arg['-C']
         # modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False)
         self.dojo.modify_room(room_name=room_name, room_type=room_type, new_name=new_room_name, d=d, D=D, c=c, C=C)
-        print(arg)
 
     @docopt_cmd
     def do_modify_person(self, arg):
@@ -189,9 +188,12 @@ class MyInteractive (cmd.Cmd):
         print(arg)
 
     @docopt_cmd
-    def do_search_id(self, arg):
-        """Usage: search_id <any_name> """
-        print(arg)
+    def do_search_id_for(self, arg):
+        """Usage: search_id <any_name> [<other_name>] """
+        if arg['<any_name>']:
+            self.dojo.search_id_for(arg['<any_name>'], arg['<other_name>'])
+        else:
+            print("searching an id needs at least one name")
 
     @docopt_cmd
     def do_promote_person(self, arg):
