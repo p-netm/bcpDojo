@@ -1,55 +1,28 @@
-import random
-
 class Room(object):
-    max_space = 0
-    name = ""
+    def __init__(self, name, max_space):
+        self.max_space = max_space
+        self.room_name = name
+        self.occupants = 0
 
-    def __init__(self):
+    def get_type(self):
         pass
-
-    def get_type(self):
-        pass
-
-
-class LivingSpace(Room):
-    max_space = 4
-
-    def __init__(self, name):
-        self.name = name
-
-    def get_type(self):
-        return "LivingSpace"
-
-
-class Office(Room):
-    max_space = 6
-
-    def __init__(self, name):
-        self.name = name
-
-    def get_type(self):
-        return "Office"
 
 
 class Person(object):
-    person_id = ""
-    # remove id_placeholder -> ADDING ID AS SECOND PARAMETER
-    person_name = ""
+    def __init__(self, name, p_id):
+        self.person_id = p_id
+        self.person_name = name
+        # track allocations as objects
+        self.office = None
 
-    def __init__(self):
-        pass
 
     def get_type(self):
         pass
 
 
 class Staff(Person):
-    def __init__(self, name, person_id):
-        self.person_name = name
-        self.person_id = person_id
-
-    def __del__(self):
-        pass
+    def __init__(self, name, p_id):
+        super().__init__(name=name, p_id=p_id)
 
     def get_type(self):
         return "Staff"
@@ -57,12 +30,26 @@ class Staff(Person):
 
 class Fellow(Person):
 
-    def __init__(self, name, person_id):
-        self.person_name = name
-        self.person_id = person_id
-
-    def __del__(self):
-        pass
+    def __init__(self, name, p_id):
+        super().__init__(name=name, p_id=p_id)
+        self.space = None
 
     def get_type(self):
         return "Fellow"
+
+class LivingSpace(Room):
+    def __init__(self, name):
+        super().__init__(name=name, max_space=6)
+
+
+    def get_type(self):
+        return "LivingSpace"
+
+
+class Office(Room):
+    def __init__(self, name):
+        super().__init__(name=name, max_space=4)
+
+    def get_type(self):
+        return "Office"
+
