@@ -185,6 +185,9 @@ class MyInteractive (cmd.Cmd):
     @docopt_cmd
     def do_modify_person(self, arg):
         """Usage: modify_person <person_identifier> [--id=new_id ][ --first_name=new_name ][ --second_name=new_name ][ -d]"""
+        person_id = arg['<person_identifier>']
+        self.dojo.modify_person(id=person_id, new_id=arg['--id'], f_name=arg['--first_name'],
+                                s_name=arg['--second_name'], delete=arg['-d'])
         print(arg)
 
     @docopt_cmd

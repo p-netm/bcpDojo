@@ -60,3 +60,16 @@ if a certain file is existent.
     """
 19 a fellow having a living space but no office --> then he would be in the unllalocated list but not in the
 unallocated living list
+
+ok here is a thought: see modification of objects could be much more safe and unvulnerable if there was a way
+like in c++ where variable names of connections such as a person belonging to a room can be dynamically tracked
+each time that room_names or equivalent attributes are needed. Soo like i should try and avoid hard coding relationships
+, as in retrieveal of such connected or rather information can be retrieved via reference. so say person track which office
+and space that they are located. then retrieving the office_names we can build a set of all office_properties for all people
+and so the same case for living_space. but in this case if we change say the office name then we have to loop through the
+people's office_allocation property and reassign this property. Am looking for a situation where i need changing
+data only in one place and the same change should reflect across every point where that specific data is referenced. ok..
+so what if we also have room objects that track their room. so a person object will like track a room_object instead of the room name
+. the philosophy behind this approach is that a person knows what rooms he belongs to but a room has no mind for knowing
+who has been allocated to it. Maybe we can help the room by setting up a trigger whereby after a person is added to the room
+one of its other properties that we shall occupants_no is updated.

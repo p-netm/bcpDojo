@@ -10,12 +10,18 @@ class InstancesTests(unittest.TestCase):
         self.staff1 = Staff("person_name", '3254698')
         self.fellow1 = Fellow("fellow_name", '1235687')
         self.office1 = Office("office_name")
+        self.dojo = Dojo()
+
+    def tearDown(self):
+        del(self.dojo)
 
     def test_if_instance(self):
         self.assertIsInstance(self.staff1.person_id, str,
                               msg=" the staff id should be a string")
         self.assertIsInstance(self.fellow1.person_id, str,
                               msg=" the fellow id should be a string")
+
+
 
 class TestsForTask0(unittest.TestCase):
     """ This class tests the add_person function and the create_room function"""
@@ -94,6 +100,9 @@ class TestsForTask0(unittest.TestCase):
 class SearchName(unittest.TestCase):
     def setUp(self):
         self.util = Dojo()
+        self.dojo = Dojo()
+        self.dojo.add_person('name', 'name', 'staff', 'n', '3254698')
+        self.dojo.add_person('name', 'name', 'fellow', 'y', '1235687')
         # load 2 rooms , load 2 space, load 2 fellows, load 2 staff
         self.util.create_room("office", ['mombasa', 'Nairobi'])
         self.util.create_room("living_space", ['21', '22'])
@@ -105,6 +114,7 @@ class SearchName(unittest.TestCase):
     def tearDown(self):
         # please go through a proper definition of what this is supposed to do
         del(self.util)
+        del(self.dojo)
 
     def test_search_name_function(self):
         """ This function is given a name and returns the type of the object with that name as a string"""
@@ -133,6 +143,25 @@ class SearchName(unittest.TestCase):
         self.util.delete_room('kerugoya')
         self.assertNotIn('kerugoya', self.util.office_dict.keys())
 
+    def test_clear_room_function(self):
+        """select one room that is not empty and clear it. """
+        for room in self.util.office_dict.keys():
+            if len(self.util.office_dict[room]) > 0:
+                selected_room = room
+        before_clear = len(self.util.unallocated_list)
+        self.assertGreaterEqual(len(self.util.office_dict[selected_room]), 1)
+        self.util.clear_room(selected_room)
+        self.assertEqual(len(self.util.office_dict[selected_room]), 0)
+        self.assertGreater(len(self.util.unallocated_list), before_clear)
+        for room in self.util.living_space_dict.keys():
+            if len(self.util.living_space_dict[room]) > 0:
+                selected_room = room
+        before_clear = len(self.util.unallocated_living_list)
+        self.assertGreaterEqual(len(self.util.living_space_dict[selected_room]), 1)
+        self.util.clear_room(selected_room)
+        self.assertEqual(len(self.util.living_space_dict[selected_room]), 0)
+        self.assertGreater(len(self.util.unallocated_living_list), before_clear)
+
     def test_search_id_for_function(self):
         """if two people share a common name, one name, both-names, returns alist of ids, retrun empty list if none """
         self.util.add_person('Peter', 'Muriuki', 'fellow', 'y', '89702313')
@@ -141,3 +170,25 @@ class SearchName(unittest.TestCase):
         self.assertTrue(type(self.util.search_id_for('peter')) is list)
         self.assertEqual(3, len(self.util.search_id_for('peter')))
         self.assertEqual(4, len(self.util.search_id_for('muriuki')))
+
+    def tests_for_retrieve_office_and_space_names_by_id(self):
+        """add a person to an office or a space and them check the returned result """
+        person_obj = self.util.retrieve_person_by_id('89702323')
+        self.assertEqual(self.util.retrieve_person_by_id('8970sd23'), False)
+        self.util.assign_office(person_obj, 'mombasa')
+        office_name = self.util.retrieve_office_room('89702323')
+        self.assertListEqual(['mombasa', "office", 'peter Muriuki'], office_name)
+        # and now for retrieving the living_space_name
+
+    def test_get_all_ids_function(self):
+        """ The get all ids function should return a list"""
+        ids_list = self.dojo.get_all_ids()
+        self.assertTrue(type(ids_list) is list)
+        self.assrtEqual(len(ids_list), 2)
+        self.assertListEqual(ids_list, ['1235687', '3254698'])
+
+    def test_id_is_present_function(self):
+        boolean = self.dojo.id_is_present('3254698')
+        self.assertTrue(boolean)
+        boolean = self.dojo.id_is_present('325469s')
+        self.assertTrue(not boolean)

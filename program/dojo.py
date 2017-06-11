@@ -60,6 +60,9 @@ class Dojo(object):
         if d:
             """ We are gona delete a room"""
             self.delete_room(room_name)
+        if c:
+            """ We are just to clear a room """
+            self.clear_room(room_name)
 
     def modify_room_name(self, room_name, new_room_name, room_type):
         # first retrieve the room name
@@ -95,10 +98,7 @@ class Dojo(object):
                 else:
                     print("there is no office with the name: %s" % room_name)
 
-    def delete_room(self, room_name):
-        # first empty the room then pop the room
-        # if room is an office: all deleted fellows and staff will be appended to the unallocated list
-        # else if the room is a living_space fellows only will be appended to the unallocated living_list
+    def clear_room(self, room_name, arg=None):  # integrate a room_type here
         if self.search_name(room_name) == "Office":
             for person_name in self.office_dict[room_name]:
                 # the problem here is if should we try to retrieve a person's object by use of a name, then
@@ -112,7 +112,8 @@ class Dojo(object):
                     self.unallocated_list.append(person_obj)
                 else:
                     raise Exception("AmbiguityError")
-            self.office_dict.pop(room_name)
+            if arg == "delete":
+                self.office_dict.pop(room_name)
         if self.search_name(room_name) == "LivingSpace":
             for person_name in self.living_space_dict[room_name]:
                 if len(self.search_id_for(person_name)) == 1:
@@ -120,10 +121,22 @@ class Dojo(object):
                     self.unallocated_living_list.append(person_obj)
                 else:
                     raise Exception("AmbiguityError")
-            self.living_space_dict.pop(room_name)
+            if arg == 'delete':
+                self.living_space_dict.pop(room_name)
 
+    def delete_room(self, room_name):
+        # first empty the room then pop the room
+        # if room is an office: all deleted fellows and staff will be appended to the unallocated list
+        # else if the room is a living_space fellows only will be appended to the unallocated living_list
+        self.clear_room(room_name, 'delete')
+
+    def clear_reassign(self, room_name):
+        pass
     def delete_reassign(self, room_name):
         # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
+        pass
+
+    def modify_person(self, id, new_id=None, f_name=None, s_name=None, delete=None):
         pass
 
     def set_person_id(self, person_id):
@@ -354,11 +367,10 @@ class Dojo(object):
             if len(self.living_space_dict[space_obj]) == 0:
                 pass  # i do not know yet what to do for the rooms that do not have occupants
             elif len(self.living_space_dict[space_obj]) == 1:
-                print_string += "\n" + '(living_space)' + space_obj.upper() + "\n" + "-" * 30 + "\n"
+                print_string += "\n" + '(living_space)' + space_obj.upper() + "\n" + "-" * 37 + "\n"
                 print_string += self.living_space_dict[space_obj][len(self.living_space_dict[space_obj]) - 1] + "\n"
             elif len(self.living_space_dict[space_obj]) > 1:
-                print_string += "\n" + '(living_space)' + space_obj + "\n" + "-" * 30 + "\n"
-                print_string += "\n" + space_obj.upper() + "\n"
+                print_string += "\n" + '(living_space)' + space_obj.upper() + "\n" + "-" * 37 + "\n"
                 for person_index in range(0, len(self.living_space_dict[space_obj]) - 1):
                     print_string += self.living_space_dict[space_obj][person_index] + ", "
                 print_string += self.living_space_dict[space_obj][len(self.living_space_dict[space_obj]) - 1] + "\n"
@@ -366,10 +378,10 @@ class Dojo(object):
             if len(self.office_dict[office_object]) == 0:
                 pass
             if len(self.office_dict[office_object]) == 1:
-                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 30 + "\n"
+                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 37 + "\n"
                 print_string += self.office_dict[office_object][len(self.office_dict[office_object]) - 1] + "\n"
             if len(self.office_dict[office_object]) > 1:
-                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 30 + "\n"
+                print_string += "\n" + '(office)' + office_object.upper() + "\n" + "-" * 37 + "\n"
                 for person_index in range(0, len(self.office_dict[office_object]) - 1):
                     print_string += self.office_dict[office_object][person_index] + ", "
                 print_string += self.office_dict[office_object][len(self.office_dict[office_object]) - 1] + "\n"
@@ -597,7 +609,7 @@ class Dojo(object):
     def search_name(self, search_parameter, category=None):
         """" Task1: Takes in a str name of any object and finds the object associated with that string"""
         # i need an alternative implementation where you can use one word to search for a person -> maybe use
-        # aditional optional arguments to check through; category can take "person" or "room"
+        # additional optional arguments to check through; category can take "person" or "room"
 
         def selective_search_name(search_parameter):
             for person in self.fellow_list:
@@ -645,7 +657,8 @@ class Dojo(object):
         for person in self.staff_list:
             if person.person_id == person_id:
                 return person
-        return "no one was found with the id: " + person_id
+        print("no one was found with the id: " + person_id)
+        return False
 
     def retrieve_person_by_name(self, person_name):
         for person in self.fellow_list:
