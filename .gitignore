@@ -4,11 +4,7 @@ testit.py
 /.cache/
 program/__pycache__/
 tests/__pycache__/
-tests/task1_tests.py
 /bcpDojo/sys/testit.py
-/tests/task2_tests.py
 /tests/testit.py
-/bcpDojo/sys/migration.py
-!/bcpDojo/sys/migration.py
-!/tests/task1_tests.py
-!/tests/task2_tests.py
+/tests/old_tests.py
+/program/testit.py

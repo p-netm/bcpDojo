@@ -43,7 +43,7 @@ class LivingSpace(Room):
 
 
     def get_type(self):
-        return "LivingSpace"
+        return "living_space"
 
 
 class Office(Room):
@@ -51,5 +51,5 @@ class Office(Room):
         super().__init__(name=name, max_space=4)
 
     def get_type(self):
-        return "Office"
+        return "office"
 
