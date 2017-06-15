@@ -40,9 +40,9 @@ class Dojo(object):
                 if room_name not in self.room_name_set:
                     listing.append(housing_class(room_name))
                     p_success("An %s called %s has been successfully created!" %
-                          (room_type, housing_class(str(room_name)).room_name))
+                          (room_type, housing_class(str(room_name)).room_name.capitalize()))
                 else:
-                    raise ValueError("Room named: %s is already created" % room_name)
+                    raise ValueError("Room named: %s is already created" % room_name.capitalize())
             except ValueError as error:
                 p_danger(error)
                 return "{} {} exists.".format(room_type.capitalize(), room_name.capitalize())
@@ -111,9 +111,12 @@ class Dojo(object):
             print("%s" % person.get_type(), person.person_name, ": \t", person.person_id)
 
     def compute_variables(self):
-        self.room_name_set = set()
         for room_obj in self.room_list:
             self.room_name_set.add(room_obj.room_name)
+            if room_obj.get_type() == 'office':
+                self.office_dict[room_obj.room_name] = []
+            elif room_obj.get_type() == 'living_space':
+                self.living_space_dict[room_obj.room_name] = []
 
         for person in self.person_list:
             if person.office is None:
@@ -125,14 +128,8 @@ class Dojo(object):
             if person.get_type() == "fellow":
                 self.fellow_list.append(person)
             if person.office is not None:
-                if person.office not in self.office_dict.keys():
-                    self.office_dict[person.office] = list()
-                    self.office_dict[person.office].append(person.person_name)
                 self.office_dict[person.office].append(person.person_name)
             if person.get_type() == "fellow" and person.space is not None:
-                if person.space not in self.living_space_dict.keys():
-                    self.living_space_dict[person.space] = list()
-                    self.living_space_dict[person.space].append(person.person_name)
                 self.living_space_dict[person.space].append(person.person_name)
 
     def assign_office(self, person_object, office_name=""):
@@ -146,17 +143,24 @@ class Dojo(object):
             except IndexError:
                 return False
         else:
-            office_obj = self.get_room_by_room_name('office', office_name)
+            office_obj = self.get_room_by_room_name(office_name, 'office')
         person_object.office = office_obj.room_name
 
         p_success(person_object.person_name, "has been allocated the office",
               office_obj.room_name)
+        office_obj.occupants += 1
         return True
 
-    def get_room_by_room_name(self, room_type, room_name):
-        for room_obj in self.room_list:
-            if room_obj.get_type() == room_type and room_obj.room_name == room_name:
-                return room_obj
+    def get_room_by_room_name(self, room_name, room_type=None):
+        if room_type is not None:
+            for room_obj in self.room_list:
+                if room_obj.get_type() == room_type and room_obj.room_name == room_name:
+                    return room_obj
+        elif room_type is None:
+            for room_obj in self.room_list:
+                if room_obj.room_name == room_name:
+                    return room_obj
+        return False
 
     def assign_living_space(self, person_object, space_name=""):
         if not space_name:
@@ -166,10 +170,11 @@ class Dojo(object):
             except IndexError:
                 return False
         else:
-            space_obj = self.get_room_by_room_name('living_space', space_name)
+            space_obj = self.get_room_by_room_name(space_name, 'living_space')
         person_object.space = space_obj.room_name
         p_success(person_object.person_name, "has been allocated to the living space: ",
               space_obj.room_name)
+        space_obj.occupants += 1
         return True
 
 
@@ -244,8 +249,9 @@ class Dojo(object):
 #######################################################################################################################
 
     def modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False):
+        self.compute_variables()
         if new_name:
-            self.modify_room_name(room_name, new_name, room_type)
+            self.modify_room_name(room_name, new_name , room_type)
         if d:
             """ We are gona delete a room"""
             self.delete_room(room_name)
@@ -254,70 +260,44 @@ class Dojo(object):
             self.clear_room(room_name)
 
     def modify_room_name(self, room_name, new_room_name, room_type):
-        # first retrieve the room name
-        if room_type == "office":
-            if room_name in self.office_dict.keys():
-                # assign the value for room_name to new_room_name then pop room_name
-                self.office_dict[new_room_name] = self.office_dict[room_name]
-                self.office_dict.pop(room_name)
-                print("%s changed to %s" % (room_name, new_room_name))
-            else:
-                print("there is no office with the name: %s" % room_name)
-        elif room_type == "living_space":
-            if room_name in self.living_space_dict.keys():
-                self.living_space_dict[new_room_name] = self.living_space_dict[room_name]
-                self.living_space_dict.poop(room_name)
-                print("%s changed to %s" % (room_name, new_room_name))
-            else:
-                print("there is no office with the name: %s" % room_name)
+        # first check the room is existent and then retrieve the room name
+        if room_name not in self.room_name_set:
+            p_warning("%s room was not found" % room_name)
+            return False
+        # if room_name was found
+        room_obj = self.get_room_by_room_name(room_name=room_name)
+        if not room_type and room_obj.get_type() != room_type:
+            p_warning("No {} was found with the name {}".format(room_type, room_name))
         else:
-            if self.search_name(room_name) == "Office":
-                if room_name in self.office_dict.keys():
-                # assign the value for room_name to new_room_name then pop room_name
-                    self.office_dict[new_room_name] = self.office_dict[room_name]
-                    self.office_dict.pop(room_name)
-                    print("%s changed to %s" % (room_name, new_room_name))
-                else:
-                    print("there is no office with the name: %s" % room_name)
-            elif self.search_name(room_name) == "LivingSpace":
-                if room_name in self.living_space_dict.keys():
-                    self.living_space_dict[new_room_name] = self.living_space_dict[room_name]
-                    self.living_space_dict.poop(room_name)
-                    print("%s changed to %s" % (room_name, new_room_name))
-                else:
-                    print("there is no office with the name: %s" % room_name)
+            room_obj.room_name = new_room_name
+        return room_obj
 
-    def clear_room(self, room_name, arg=None):  # integrate a room_type here
-        if self.search_name(room_name) == "Office":
-            for person_name in self.office_dict[room_name]:
-                # the problem here is if should we try to retrieve a person's object by use of a name, then
-                # we could end up in big trouble if two people share the same name and the system ends up returning
-                # the wrong object.
-                # maybe we could use the get names by id and if returns a list of more than len 1, then we know we
-                # are in deep shit
-                if len(self.search_id_for(person_name)) == 1:
-                    # now we can act, retrieve the person object
-                    person_obj = self.retrieve_person_by_name(person_name)
-                    self.unallocated_list.append(person_obj)
-                else:
-                    raise Exception("AmbiguityError")
-            if arg == "delete":
-                self.office_dict.pop(room_name)
-        if self.search_name(room_name) == "LivingSpace":
-            for person_name in self.living_space_dict[room_name]:
-                if len(self.search_id_for(person_name)) == 1:
-                    person_obj = self.retrieve_person_by_name(person_name)
-                    self.unallocated_living_list.append(person_obj)
-                else:
-                    raise Exception("AmbiguityError")
-            if arg == 'delete':
-                self.living_space_dict.pop(room_name)
+    def clear_room(self, room_name, room_type):
+        if room_name not in self.room_name_set:
+            p_warning("%s room was not found" % room_name)
+            return False
+        room_obj = self.get_room_by_room_name(room_name=room_name)
+        if not room_type and room_type != room_obj.get_type():
+            p_warning("No {} was found with the name {}". format(room_type, room_name))
+            return False
+        deallocate_names = list()
+        for person_obj in self.person_list:
+            if person_obj.office is room_obj:
+                person_obj.office = None
+                deallocate_names.append(person_obj.fullname)
+            elif person_obj.get_type() == 'fellow' and person_obj.space is room_obj:
+                person_obj.space = None
+                deallocate_names.append(person_obj.fullname)
+            # maybe we can append the deallocated person_objects to a list and then print that they were deallocated
+        p_success(", ".join(deallocate_names) + " were successfully cleared from %s" % room_name.capitalize())
+        return room_obj
 
-    def delete_room(self, room_name):
-        # first empty the room then pop the room
-        # if room is an office: all deleted fellows and staff will be appended to the unallocated list
-        # else if the room is a living_space fellows only will be appended to the unallocated living_list
-        self.clear_room(room_name, 'delete')
+
+    def delete_room(self, room_name, room_type=False):
+        # first get the cleared room object, pop it from the room_list and then delete it
+        cleared_room_obj = self.clear_room(room_name, room_type)
+        self.room_list.pop(self.room_list.index(cleared_room_obj))
+        del(cleared_room_obj)
 
     # def clear_reassign(self, room_name):
     #     pass
