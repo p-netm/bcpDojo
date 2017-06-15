@@ -111,6 +111,14 @@ class Dojo(object):
             print("%s" % person.get_type(), person.person_name, ": \t", person.person_id)
 
     def compute_variables(self):
+        self.room_name_set = set()
+        self.unallocated_list = []
+        self.unallocated_living_list = []  # contains only fellow objects who requested accommodation but did not get
+        self.staff_list = []
+        self.fellow_list = []
+        self.office_dict = {}
+        self.living_space_dict = {}
+
         for room_obj in self.room_list:
             self.room_name_set.add(room_obj.room_name)
             if room_obj.get_type() == 'office':
@@ -144,9 +152,9 @@ class Dojo(object):
                 return False
         else:
             office_obj = self.get_room_by_room_name(office_name, 'office')
-        person_object.office = office_obj.room_name
+        person_object.office = office_obj
 
-        p_success(person_object.person_name, "has been allocated the office",
+        p_success(person_object.person_name + " has been allocated the office " +
               office_obj.room_name)
         office_obj.occupants += 1
         return True
@@ -163,6 +171,8 @@ class Dojo(object):
         return False
 
     def assign_living_space(self, person_object, space_name=""):
+        if person_object.get_type() != 'Fellow':
+            raise ValueError("Only Fellows can be assigned to living spaces")
         if not space_name:
             try:
                 empty_space_list = self.get_empty_rooms('living_space')
@@ -171,11 +181,29 @@ class Dojo(object):
                 return False
         else:
             space_obj = self.get_room_by_room_name(space_name, 'living_space')
-        person_object.space = space_obj.room_name
-        p_success(person_object.person_name, "has been allocated to the living space: ",
+        person_object.space = space_obj
+        p_success(person_object.person_name + " has been allocated to the living space: " +
               space_obj.room_name)
         space_obj.occupants += 1
         return True
+
+    def retrieve_person_by_id(self, person_id):
+        """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id"""
+        for person in self.person_list:
+            if person.person_id == person_id:
+                return person
+        p_danger("No one was found with the id: " + person_id)
+        return False
+
+    def retrieve_person_by_name(self, person_name):
+        for person in self.person_list:
+            if person.person_name == person_name:
+                return person
+        p_danger("No one was found with the name: " + person_name)
+        return False
+
+
+
 
 
 
@@ -222,11 +250,11 @@ class Dojo(object):
                     fellow_obj = Fellow(str(person_name), person_id)
                     self.person_list.append(fellow_obj)
                     office_assign_check = self.assign_office(fellow_obj)
-                    p_success(person_name, "has been successfully added")
+                    p_success(person_name + " has been successfully added")
                     if not office_assign_check:
-                        p_warning(person_name, "has been added but not assigned to any office")
+                        p_warning(person_name + " has been added but not assigned to any office")
                 else:
-                    p_danger(person_name, "has not been added; the id is already in the system")
+                    p_danger(person_name+ " has not been added; the id is already in the system")
 
         elif occupation == "staff":
             if not self.id_is_present(person_id):
@@ -235,9 +263,9 @@ class Dojo(object):
                 # add the staff to the office dict ?
                 office_assign_check = self.assign_office(staff_obj)
                 if not office_assign_check:
-                    p_warning(person_name, "has been added but not allocated to any office")
+                    p_warning(person_name + " has been added but not allocated to any office")
             else:
-                p_danger("detected an id collision for", person_name)
+                p_danger("detected an id collision for " + person_name)
 
 
 
@@ -251,7 +279,7 @@ class Dojo(object):
     def modify_room(self, room_name, room_type=False, new_name=False, d=False, D=False, c=False, C=False):
         self.compute_variables()
         if new_name:
-            self.modify_room_name(room_name, new_name , room_type)
+            self.modify_room_name(room_name, new_name, room_type)
         if d:
             """ We are gona delete a room"""
             self.delete_room(room_name)
@@ -259,14 +287,14 @@ class Dojo(object):
             """ We are just to clear a room """
             self.clear_room(room_name)
 
-    def modify_room_name(self, room_name, new_room_name, room_type):
+    def modify_room_name(self, room_name, new_room_name, room_type=False):
         # first check the room is existent and then retrieve the room name
         if room_name not in self.room_name_set:
             p_warning("%s room was not found" % room_name)
             return False
         # if room_name was found
         room_obj = self.get_room_by_room_name(room_name=room_name)
-        if not room_type and room_obj.get_type() != room_type:
+        if room_type and room_obj.get_type() != room_type:
             p_warning("No {} was found with the name {}".format(room_type, room_name))
         else:
             room_obj.room_name = new_room_name
@@ -277,7 +305,7 @@ class Dojo(object):
             p_warning("%s room was not found" % room_name)
             return False
         room_obj = self.get_room_by_room_name(room_name=room_name)
-        if not room_type and room_type != room_obj.get_type():
+        if room_type and room_type != room_obj.get_type():
             p_warning("No {} was found with the name {}". format(room_type, room_name))
             return False
         deallocate_names = list()
@@ -297,16 +325,70 @@ class Dojo(object):
         # first get the cleared room object, pop it from the room_list and then delete it
         cleared_room_obj = self.clear_room(room_name, room_type)
         self.room_list.pop(self.room_list.index(cleared_room_obj))
-        del(cleared_room_obj)
+        del cleared_room_obj
 
-    # def clear_reassign(self, room_name):
-    #     pass
-    # def delete_reassign(self, room_name):
-    #     # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
-    #     pass
-    #
-    # def modify_person(self, id, new_id=None, f_name=None, s_name=None, delete=None):
-    #     pass
+    def clear_reassign(self, room_name, room_type=False):
+        if room_name not in self.room_name_set:
+            p_warning("%s room was not found" % room_name)
+            return False
+        room_obj = self.get_room_by_room_name(room_name=room_name)
+        if room_type and room_type != room_obj.get_type():
+            p_warning("No {} was found with the name {}". format(room_type, room_name))
+            return False
+        deallocate_names = list()
+        deallocate_obj = list()
+        for person_obj in self.person_list:
+            if person_obj.office is room_obj:
+                person_obj.office = None
+                deallocate_names.append(person_obj.fullname)
+                deallocate_obj.append(person_obj)
+            elif person_obj.get_type() == 'fellow' and person_obj.space is room_obj:
+                person_obj.space = None
+                deallocate_names.append(person_obj.fullname)
+                deallocate_obj.append(person_obj)
+            # maybe we can append the deallocated person_objects to a list and then print that they were deallocated
+        p_success(", ".join(deallocate_names) + " were successfully cleared from %s" % room_name.capitalize())
+        room_obj.occupants = room_obj.max_space
+        if room_obj.get_type == 'office':
+            for person_obj in deallocate_obj:
+                self.assign_office(person_obj)
+        elif room_obj.get_type() == 'living_space':
+            for person_obj in deallocate_obj:
+                self.assign_living_space(person_obj)
+        room_obj.occupants = 0
+        return room_obj
+
+    def delete_reassign(self, room_name, room_type=False):
+        # first empty room and while at it reassign members to a different room, then pop room if len of value is 0
+        cleared_room = self.clear_reassign(room_name, room_type)
+        if cleared_room.occupants > 0:
+            p_info("%s is occupied" % room_name.capitalize())
+        else:
+            self.room_list.pop(self.room_list.index(cleared_room))
+            del cleared_room
+
+    def modify_person(self, old_id, new_id=None, f_name=None, s_name=None, delete=None):
+        # for starters modify person can modify several aspects of a person synchronously
+        # get person by the said id and replace the id
+        person_obj = self.retrieve_person_by_id(old_id)
+        if person_obj:
+            if new_id is not None:
+                person_obj.person_id = new_id
+            if f_name is not None:
+                full_name = person_obj.person_name.split(" ")
+                full_name[0] = f_name
+                person_obj.person_name = " ".join(full_name)
+            if s_name is not None:
+                full_name = person_obj.person_name.split(" ")
+                full_name[1] = s_name
+                person_obj.person_name = " ".join(full_name)
+            if delete is not None:
+                # the person_obj fails to exist, pop the object from the person_list
+                self.person_list.pop(self.person_list.index(person_obj))
+                del person_obj
+        else:
+            p_danger("No person found with the Id: %s" % old_id)
+            p_info("Consider the view_ids or the search_id_for functions, to verify if an id is in the system")
 
 
 
@@ -703,24 +785,6 @@ class Dojo(object):
 
         return False
 
-    def retrieve_person_by_id(self, person_id):
-        """ Task2: Thought: have a function that can retrieve a person object when only given either the person's id"""
-        for person in self.fellow_list:
-            if person.person_id == person_id:
-                return person
-        for person in self.staff_list:
-            if person.person_id == person_id:
-                return person
-        print("no one was found with the id: " + person_id)
-        return False
-
-    def retrieve_person_by_name(self, person_name):
-        for person in self.fellow_list:
-            if person.person_name == person_name:
-                return person
-        for person in self.staff_list:
-            if person.person_name == person_name:
-                return person
 
     def search_id_for(self, name, other_name=None):
         """return a list of people who have the said name """
