@@ -7,14 +7,12 @@ CONSIDERATIONS:
     in operning and reading files
 
 
-7. just a thought, whatif the person's object did track their allocation status i think this would
-be quite computationaly significant.
+
 8. remove the broker stage between the application and the database, the stage where there is pending
 data within the system that is yet to be commited, this is to help secure against system failure.
 9. a user cannot load state unless he/she has saved the state --> to avoid session data collision
 10. quiz: if we tried saving data that is already in the database what happens
-11. correcty review the logic of especially how fellow who requested accomodation and did not recieve
-is handled when being saved to the database as well as being retrieved
+
 12. there is the conundrum of how to get an id from a person's name: see several people could share a
 same name and if we were to use a name to extract the person id i think it would be futile --> i think
 we can have a retrieve_id method that returns all ids of people who have a certain name
@@ -30,9 +28,7 @@ we can have a retrieve_id method that returns all ids of people who have a certa
                             ADDITIONAL FEATURES
 1.add text conditional coloring
 2. consider adding  a gui
-3. rename_room
-4. delete_room
-    maybe we can say modify room with optional flags that specify whether rename or delete
+
 5.modify person: flags: remove_person, modify any property of a person's data including the id, name, and
     occupation. the last however is onedirectional, only fellows can become staff and nor vice versa
 6.Print_room: considerations : the general output lookout, add csv output support, add printing capabilities
@@ -42,6 +38,9 @@ we can have a retrieve_id method that returns all ids of people who have a certa
 10. load_people: Addd csv input capabilities,
 
                                         RESOLVED
+ 3. rename_room
+4. delete_room
+    maybe we can say modify room with optional flags that specify whether rename or delete
 
 1 the reallocate person should have also been used to allocate unallocated persons to a room.
 2 i also think that the os.path module can help simplify on the functionality of testing to see
@@ -60,6 +59,10 @@ if a certain file is existent.
     """
 19 a fellow having a living space but no office --> then he would be in the unllalocated list but not in the
 unallocated living list
+7. just a thought, whatif the person's object did track their allocation status i think this would
+be quite computationaly significant.
+11. correcty review the logic of especially how fellow who requested accomodation and did not recieve
+is handled when being saved to the database as well as being retrieved
 
 ok here is a thought: see modification of objects could be much more safe and unvulnerable if there was a way
 like in c++ where variable names of connections such as a person belonging to a room can be dynamically tracked
