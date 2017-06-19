@@ -22,7 +22,7 @@ we can have a retrieve_id method that returns all ids of people who have a certa
 16. that on loading people from a file should not display or those many confirmation messages but maybe a few
    where the names of people say assigned a particular office are listed in the confirmation message as a sequence
 17. it so happens that you can load people from the same txt file several times, how can this be avoided???
-18. see to it that display function displays data in a tabulated form
+
 
 
                             ADDITIONAL FEATURES
@@ -63,8 +63,9 @@ unallocated living list
 be quite computationaly significant.
 11. correcty review the logic of especially how fellow who requested accomodation and did not recieve
 is handled when being saved to the database as well as being retrieved
+18. see to it that display function displays data in a tabulated form
 
-ok here is a thought: see modification of objects could be much more safe and unvulnerable if there was a way
+ok here is a thought  : see modification of objects could be much more safe and unvulnerable if there was a way
 like in c++ where variable names of connections such as a person belonging to a room can be dynamically tracked
 each time that room_names or equivalent attributes are needed. Soo like i should try and avoid hard coding relationships
 , as in retrieveal of such connected or rather information can be retrieved via reference. so say person track which office

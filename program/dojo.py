@@ -137,9 +137,9 @@ class Dojo(object):
             if person.get_type() == "fellow":
                 self.fellow_list.append(person)
             if person.office is not None:
-                self.office_dict[person.office].append(person.person_name)
+                self.office_dict[person.office.room_name].append(person.person_name)
             if person.get_type() == "fellow" and person.space is not None:
-                self.living_space_dict[person.space].append(person.person_name)
+                self.living_space_dict[person.space.room_name].append(person.person_name)
 
     def assign_office(self, person_object, office_name=""):
         """ takes a person_object and fills up the person.office property randomly with an office object,
@@ -244,9 +244,9 @@ class Dojo(object):
                     living_assign_check = self.assign_living_space(fellow_obj)
                     if not office_assign_check:
                         # the fellow was not assigned to an office
-                        p_warning(person_name, "has been added but not assigned to any office")
+                        p_warning(person_name + "has been added but not assigned to any office")
                     if not living_assign_check:
-                        p_warning(person_name, "has been added but not assigned to any living_space")
+                        p_warning(person_name + "has been added but not assigned to any living_space")
                 else:
                     print(person_name, "has not been added; the id is already in the system")
 
@@ -675,14 +675,43 @@ class Dojo(object):
 
     def display(self):
         """ using this only for debugging purposes"""
-        # change the presentation view  #########################
-        self.compute_variables()
-        print("\nliving_space ", self.living_space_dict)
-        print("office_dict", self.office_dict)
-        print("staff_list", self.staff_list)
-        print("fellow_list", self.fellow_list)
-        print("unallocate_list", self.unallocated_list)
-        print("unallocated_living_list", self.unallocated_living_list, "\n")
+        def fill_format(string, cut):
+            if len(string) > cut:
+                return string[0:cut]
+            elif len(string) < cut:
+                return string + " " * (cut - len(string))
+            return string
+        holder = '''
++--------------------------------------------------------------------------------------------
+|             PERSON           |  STAFF | FELLOWS |     LIVINGSPACE    |        OFFICE      |
++------------------------------+--------+---------+--------------------+--------------------+
+|------------------------------|--------|---------|--------------------|--------------------|
+'''
+        for person in self.person_list:
+            # create a tuple
+            holder += "|"
+            holder += fill_format(person.person_name, 30) + "|"
+            if person.get_type() == "Staff":
+                holder += fill_format('   xx', 8) + "|"
+                holder += fill_format('', 9) + "|"
+                holder += fill_format('        N/a', 20) + "|"
+                if person.office is None:
+                    holder += fill_format('        N/a', 20) + "|"
+                else:
+                    holder += fill_format(person.office.room_name, 20) + "|"
+            elif person.get_type() == "Fellow":
+                holder += fill_format('', 8) + "|"
+                holder += fill_format('   xx', 9) + "|"
+                if person.space is None:
+                    holder += fill_format('        N/a', 20) + "|"
+                else:
+                    holder += fill_format(person.space.room_name, 20) + "|"
+                if person.office is None:
+                    holder += fill_format('        N/a', 20) + "|"
+                else:
+                    holder += fill_format(person.office.room_name, 20) + "|"
+            holder += "\n"
+            print(holder, "\n")
 
     def search_name(self, search_parameter, category=None):
         """" Task1: Takes in a str name of any object and finds the object associated with that string"""
