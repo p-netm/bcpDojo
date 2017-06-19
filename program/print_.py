@@ -1,4 +1,6 @@
-from termcolor import colored
+from termcolor import colored, cprint
+
+
 """ print methods"""
 text = colored('Hello, World!', 'green')
 
