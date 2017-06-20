@@ -54,6 +54,12 @@ class DojoTests(unittest.TestCase):
         dojo_add_room = self.dojo.create_room("living_space", ['33', ['room1', 'room2'], {}])
         self.assertEqual(dojo_add_room, "Invalid room name",
                                         msg="Invalid name for room name argument")
+        # test retrieve room_functions
+        self.assertEqual(self.dojo.retrieve_room_by_room_name('Nairobi').get_type(), 'office')
+        self.assertEqual(self.dojo.retrieve_room_by_room_name('room4').get_type(), 'living_space')
+
+        # test room modifications functions
+        self.assertEqual(self.dojo.modify_room('Nairobi', d=True), True)
 
     def test_set_person_identifier_function(self):
         self.assertEqual(self.dojo.set_person_id('12345678'), '12345678')
@@ -91,8 +97,8 @@ class DojoTests(unittest.TestCase):
         self.dojo.compute_variables()
         print("the current state of the room_name_set", self.dojo.room_name_set)
         renamed_room = self.dojo.modify_room_name('Nairobi', 'Kutus')
-        # self.assertEqual(renamed_room.room_name, 'Kutus')
-        # self.assertEqual(staff.office.room_name, 'Kutus')
+        self.assertEqual(renamed_room.room_name, 'Kutus')
+        self.assertEqual(staff.office.room_name, 'Kutus')
         self.assertTrue(not self.dojo.get_room_by_room_name('Nairobi'))
 
     def test_retrieve_person_functions(self):
@@ -106,3 +112,7 @@ class DojoTests(unittest.TestCase):
         self.assertEqual(person.person_id, '1265437')
         self.assertTrue(not self.dojo.retrieve_person_by_name('ajhdgajad hsaj'))
         self.assertEqual(self.dojo.retrieve_person_by_name('Johnson Stone').get_type(), 'Staff')
+
+
+    def test_retrieve_function(self):
+        "test that the person"

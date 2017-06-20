@@ -288,6 +288,10 @@ class Dojo(object):
         if c:
             """ We are just to clear a room """
             self.clear_room(room_name)
+        if D:
+            self.delete_reassign(room_name)
+        if C:
+            self.clear_reassign(room_name)
 
     def modify_room_name(self, room_name, new_room_name, room_type=False):
         # first check the room is existent and then retrieve the room name
@@ -327,6 +331,7 @@ class Dojo(object):
         cleared_room_obj = self.clear_room(room_name, room_type)
         self.room_list.pop(self.room_list.index(cleared_room_obj))
         del cleared_room_obj
+        return True
 
     def clear_reassign(self, room_name, room_type=False):
         if room_name not in self.room_name_set:
@@ -428,7 +433,7 @@ class Dojo(object):
         takes that room_name and prints all the people allocated to that room """
         self.compute_variables()
         serial = 0
-        if self.search_name(room_name):
+        if self.retrieve_room_by_room_name(room_name):
             print('x'*12, '==> ', room_name.upper(), ' <==', 'x'*12, '\n')
             if room_name in self.living_space_dict.keys():
                 if len(self.living_space_dict[room_name]) > 0:
@@ -713,27 +718,6 @@ class Dojo(object):
             holder += "\n"
             print(holder, "\n")
 
-    def search_name(self, search_parameter, category=None):
-        """" Task1: Takes in a str name of any object and finds the object associated with that string"""
-        # i need an alternative implementation where you can use one word to search for a person -> maybe use
-        # additional optional arguments to check through; category can take "person" or "room"
-        self.compute_variables()
-        def selective_search_name(search_parameter):
-            for person in self.fellow_list:
-                if search_parameter in person.person_name:
-                    return "Fellow"
-            for person in self.staff_list:
-                if search_parameter in person.person_name:
-                    return "Staff"
-        if category == "person":
-            return selective_search_name(search_parameter)
-        if len(re.findall('\S+', search_parameter)) < 2:
-            if search_parameter in self.living_space_dict:
-                return "LivingSpace"
-            elif search_parameter in self.office_dict:
-                return "Office"
-        elif len(re.findall('\S+', search_parameter)) >= 2:
-            return selective_search_name(search_parameter)
 
         return False
 
