@@ -68,7 +68,7 @@ class Dojo(object):
         input_id = person_id
         while bool_counter is None:
             p_info('Please type in your id(q to quit): ')
-            input_id = str(input())
+            input_id = input()
             if input_id .isdigit() and (7 == len(input_id) or len(input_id) == 8):
                 bool_counter = False
                 return input_id
@@ -219,7 +219,7 @@ class Dojo(object):
 
 ###############################################test####################################################################
 
-    def add_person(self, first_name, second_name, occupation, accommodate="n", id=None):
+    def add_person(self, first_name, second_name, occupation, accommodate="n", id=None, loaded=False):
         """ uses occupation and decides what constructor of either the subclasses
         fellow or staff that it should call. depending on the accommodate parameter
          a fellow occupant can be assigned an office and a living_space"""
@@ -283,10 +283,10 @@ class Dojo(object):
         if new_name:
             self.modify_room_name(room_name, new_name, room_type)
         if d:
-            """ We are gona delete a room"""
+            """We are gonna delete a room"""
             self.delete_room(room_name)
         if c:
-            """ We are just to clear a room """
+            """We are just to clear a room """
             self.clear_room(room_name)
         if D:
             self.delete_reassign(room_name)
@@ -542,7 +542,8 @@ class Dojo(object):
 
     def load_people(self, file_name):
         """ will take in one compulsory argument, which is the name of the file from which to read data
-        from. for each record in this file we can then add_people """
+        from. for each record in this file we can then add_people
+        """
         # retrieve file_path and check if file exists
         file_path = self.return_file_dir(file_name, 'input')
         if os.path.isfile(file_path):
@@ -591,7 +592,7 @@ class Dojo(object):
             pass
         else:
             open(dir, 'w+')
-            p_info(db_name, "database created")
+            p_info(db_name, "database file loaded")
 
         engine = create_engine('sqlite:///' + dir)
         base.metadata.create_all(engine)
